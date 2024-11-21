@@ -1,0 +1,153 @@
+---
+title: "Bid-ask spread Ardia 2024"
+author: "Leonardo"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(quantmod)
+library(bidask)
+library(readr)
+library(purrr)
+```
+
+
+# Importando precos
+```{r}
+company_codes <- read_csv("company_codes.csv")
+
+# Baixando precos com Quantmod
+getSymbols(company_codes$Company_Code, from = "2018-01-01", to = "2024-10-30", src = "yahoo")
+
+# Calculando spread com Ardia e CS
+bidask::spread(SBSP3.SA[,1:4], method = "EDGE", width = 21, na.rm = TRUE)
+
+
+
+```
+
+
+
+```{r}
+# Importar códigos de empresas
+company_codes <- read_csv("company_codes.csv")
+
+# Função segura para baixar dados
+safe_getSymbols <- safely(function(symbol) {
+  getSymbols(symbol, src = "yahoo", from = "2017-01-01", to = "2024-10-30", auto.assign = FALSE)
+})
+
+# Aplicar a função a todos os códigos de empresas usando purrr::map
+company_data_list <- company_codes$Company_Code %>%
+  map(~ safe_getSymbols(.x))
+
+# Extrair os resultados bem-sucedidos e Nomear a lista com os códigos das empresas
+company_data_clean <- company_data_list %>%
+  map("result") %>%
+  set_names(company_codes$Company_Code)
+
+# Verificar quais downloads falharam
+errors <- company_data_list %>%
+  map("error") %>%
+  keep(~ !is.null(.x))
+
+if (length(errors) > 0) {
+  print("Alguns downloads falharam:")
+  print(errors)
+} else {
+  print("Todos os dados foram baixados com sucesso.")
+}
+```
+
+
+## Seleção dos 30% maiores e 30% menores volumes diários
+```{r}
+# Agrupar as empresas com maiores médias de volume diários e selecionar os 30% maiores e 30% menores
+
+# Calcular a média de volume para cada empresa
+company_volumes <- company_data_clean %>%
+  # Extrair a coluna de Volume (coluna 5) de cada dataframe
+  map_dbl(~ mean(.x[[5]], na.rm = TRUE))
+
+# Converter os resultados para um dataframe para melhor manipulação
+company_volumes <- tibble(
+  Company = names(company_data_clean),
+  Mean_Volume = company_volumes
+)
+
+# Definir os percentis de 30% e 70%
+volume_30 <- quantile(company_volumes$Mean_Volume, 0.3, na.rm = TRUE)
+volume_70 <- quantile(company_volumes$Mean_Volume, 0.7, na.rm = TRUE)
+
+# Atribuir cada empresa a um grupo com base na média de volume
+company_volumes <- company_volumes %>%
+  mutate(
+    Group = case_when(
+      Mean_Volume <= volume_30 ~ "Low Volume (Bottom 30%)",
+      Mean_Volume > volume_70 ~ "High Volume (Top 30%)",
+      TRUE ~ "Middle Volume (40%)"
+    )
+  )
+
+# Empresas de baixo volume (Bottom 30%)
+low_volume <- company_volumes %>%
+  filter(Group == "Low Volume (Bottom 30%)") %>%
+  pull(Company)
+
+# Empresas de alto volume (Top 30%)
+high_volume <- company_volumes %>%
+  filter(Group == "High Volume (Top 30%)") %>%
+  pull(Company)
+
+# Criando um company_data_clean_high_volume e company_data_clean_low_volume
+company_data_clean_high_volume <- company_data_clean[high_volume]
+company_data_clean_low_volume <- company_data_clean[low_volume]
+
+```
+
+
+```{r}
+# Calcular os spreads para cada empresa
+company_spreads_EDGE <- company_data_clean %>%
+  map(~ bidask::spread(.x[, 1:4], method = "EDGE", width = 21, na.rm = TRUE))
+
+# Calcular o spread com method "CS" para cada empresa em company_spreads
+company_spreads_CS <- company_data_clean %>%
+  map(~ bidask::spread(.x[, 1:4], method = "CS", width = 21, na.rm = TRUE))
+
+# Juntar company_spreads e company_spreads_CS no mesmo dataframe com colunas de Data, Código, Spread_EDGE e Spread_CS
+company_spreads_df <- map2_dfr(company_spreads_EDGE, company_spreads_CS, ~ {
+  data_frame(
+    Date = index(.x),
+    Spread_EDGE = .x,
+    Spread_CS = .y
+  )
+}, .id = "Company_Code")
+
+# Calcular os spreads médios para cada ano em cada método e aplicar na variável company_spreads_year
+company_spreads_year <- company_spreads_df %>%
+  mutate(Year = year(Date)) %>%
+  group_by(Company_Code, Year) %>%
+  summarise(
+    Spread_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    Spread_CS = mean(Spread_CS, na.rm = TRUE)
+  )
+
+# Filtrar o company_spread_df para high_volume e low_volume
+company_spreads_high_volume <- company_spreads_year %>%
+  filter(Company_Code %in% high_volume)
+company_spreads_low_volume <- company_spreads_year %>%
+  filter(Company_Code %in% low_volume)
+
+# Filtrar o company_spread_year para os anos de 2017 a 2019 (antes da pandemia), para 2020 e 2021 (durante a pandemia) e para 2022 a 2024 (após a pandemia)
+company_spreads_pre <- company_spreads_year %>%
+  filter(Year %in% 2017:2019)
+company_spreads_dur <- company_spreads_year %>%
+  filter(Year %in% 2020:2021)
+company_spreads_pos <- company_spreads_year %>%
+  filter(Year %in% 2022:2024)
+
+
+```
+
