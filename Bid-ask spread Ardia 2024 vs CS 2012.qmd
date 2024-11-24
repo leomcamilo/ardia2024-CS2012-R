@@ -10,6 +10,8 @@ library(quantmod)
 library(bidask)
 library(readr)
 library(purrr)
+library(gt)
+library(writexl)
 ```
 
 
@@ -106,7 +108,7 @@ company_data_clean_low_volume <- company_data_clean[low_volume]
 
 ```
 
-
+## Cálculo dos spreads EDGE e CS para toda a base
 ```{r}
 # Calcular os spreads para cada empresa
 company_spreads_EDGE <- company_data_clean %>%
@@ -150,4 +152,82 @@ company_spreads_pos <- company_spreads_year %>%
 
 
 ```
+
+### Montando a tabela 1
+```{r}
+# Atribuir grupos de volumes aos dados de spreads
+company_spreads_df <- company_spreads_df %>%
+  mutate(Group = case_when(
+    Company_Code %in% high_volume ~ "Ativos mais líquidos",
+    Company_Code %in% low_volume ~ "Ativos menos líquidos",
+    TRUE ~ "Todos"
+  ))
+
+# Calcular as estatísticas para cada grupo e método
+stats_table <- company_spreads_df %>%
+  group_by(Group) %>%
+  summarise(
+    Média_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
+    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
+    Máximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
+    Mínimo_EDGE = min(Spread_EDGE, na.rm = TRUE),
+    Média_CS = mean(Spread_CS, na.rm = TRUE),
+    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
+    Mediana_CS = median(Spread_CS, na.rm = TRUE),
+    Máximo_CS = max(Spread_CS, na.rm = TRUE),
+    Mínimo_CS = min(Spread_CS, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Atribuir os grupos na ordem desejada
+stats_table$Group <- factor(stats_table$Group,
+                            levels = c("Ativos mais líquidos",
+                                       "Ativos menos líquidos",
+                                       "Todos"))
+
+stats_table <- stats_table %>% arrange(Group)
+
+# Create the table with merged column headings
+tabela1 <- stats_table %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "EDGE",
+    columns = c("Média_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Máximo_EDGE", "Mínimo_EDGE")
+  ) %>%
+  tab_spanner(
+    label = "CS",
+    columns = c("Média_CS", "DesvPad_CS", "Mediana_CS", "Máximo_CS", "Mínimo_CS")
+  ) %>%
+  cols_label(
+    Média_EDGE = "Média",
+    DesvPad_EDGE = "DesvPad",
+    Mediana_EDGE = "Mediana",
+    Máximo_EDGE = "Máximo",
+    Mínimo_EDGE = "Mínimo",
+    Média_CS = "Média",
+    DesvPad_CS = "DesvPad",
+    Mediana_CS = "Mediana",
+    Máximo_CS = "Máximo",
+    Mínimo_CS = "Mínimo"
+  )
+
+# Chamando a tabela
+tabela1
+```
+
+Ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10^{-5}) para ativos mais líquidos e (1{,}571447 \times 10^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+
+Segundo Ardia et al. (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
+
+Por outro lado, o EDGE mantém estimativas não viesadas independentemente do número de negociações, graças a um termo de correção analítico que considera a negociação infrequente. Nossos resultados corroboram essa evidência, mostrando que o EDGE não retorna valores nulos mesmo em ativos com baixa frequência de negociação, ao contrário do CS. Dessa forma, o EDGE se apresenta como uma metodologia mais robusta e apropriada para estimar o spread bid-ask em mercados com ativos menos líquidos.
+
+Esses resultados destacam a importância de selecionar estimadores adequados ao contexto de negociação dos ativos analisados, sendo o EDGE uma alternativa superior ao CS em cenários de baixa liquidez.
+
+Se o Marcus me passar o template, não precisarei usar, mas a princípio está o código da tabela para usar no excel/word
+
+# Exportar o data frame stats_table para um arquivo Excel
+write_xlsx(stats_table, "tabela1.xlsx")
+
+
 
