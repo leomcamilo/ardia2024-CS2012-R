@@ -45,7 +45,6 @@ csl: abnt2023.csl
 \listofequations
 \newpage
 
-
 ```{r}
 library(tidyverse)
 library(quantmod)
@@ -55,7 +54,6 @@ library(purrr)
 library(gt)
 library(writexl)
 ```
-
 
 ```{r}
 # Importando preços
@@ -68,8 +66,6 @@ getSymbols(company_codes$Company_Code, from = "2018-01-01", to = "2024-10-30", s
 bidask::spread(SBSP3.SA[,1:4], method = "EDGE", width = 21, na.rm = TRUE)
 
 ```
-
-
 
 ```{r}
 # Importar códigos de empresas
@@ -102,8 +98,8 @@ if (length(errors) > 0) {
 }
 ```
 
-
 ## Seleção dos 30% maiores e 30% menores volumes diários
+
 ```{r}
 # Agrupar as empresas com maiores médias de volume diários e selecionar os 30% maiores e 30% menores
 
@@ -149,6 +145,7 @@ company_data_clean_low_volume <- company_data_clean[low_volume]
 ```
 
 ## Cálculo dos spreads EDGE e CS para toda a base
+
 ```{r}
 # Calcular os spreads para cada empresa
 company_spreads_EDGE <- company_data_clean %>%
@@ -194,6 +191,7 @@ company_spreads_pos <- company_spreads_year %>%
 ```
 
 ### Montando a tabela 1
+
 ```{r}
 # Atribuir grupos de volumes aos dados de spreads
 company_spreads_df <- company_spreads_df %>%
@@ -256,7 +254,7 @@ tabela1 <- stats_table %>%
 tabela1
 ```
 
-Ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10^{-5}) para ativos mais líquidos e (1{,}571447 \times 10^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+Ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
 
 Segundo Ardia et al. (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
 
@@ -290,9 +288,6 @@ Esses resultados destacam a importância de selecionar estimadores adequados ao 
 
 # Bibliografia
 
-
 # Exportar o data frame stats_table para um arquivo Excel
+
 write_xlsx(stats_table, "tabela1.xlsx")
-
-
-
