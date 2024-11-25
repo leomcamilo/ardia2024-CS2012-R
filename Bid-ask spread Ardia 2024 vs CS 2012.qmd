@@ -1,8 +1,50 @@
 ---
-title: "Bid-ask spread Ardia 2024"
-author: "Leonardo"
-format: html
+title: dissertação
+author: Leonardo Camilo-da-Silva
+date: today
+execute: 
+  freeze: auto
+format: 
+  pdf:
+    template-partials: 
+    - "before-body.tex" 
+    latex_engine: xelatex
+    mainfont: Times New Roman
+    fontsize: 12pt
+    lineheight: 1.5
+    linestretch: 1.5
+    geometry: "left=3cm, top=3cm, right=2cm, bottom=2cm"
+    keep-tex: false
+    number-sections: true
+    include-in-header: config.tex        
+crossref:
+  fig-title: Figura   
+  fig-prefix: figura
+  tbl-title: Tabela     
+  tbl-prefix: tabela
+  lof-title: LISTA DE FIGURAS
+  lot-title: LISTA DE TABELAS
+  eq-title: Equação
+  eq-prefix: equação
+tbl-cap-location: top
+fig-cap-location: top
+lot: true
+lof: true
+listings: true
+toc: true
+toc-title: SUMÁRIO
+toc-depth: 3
+linkcolor: black
+link-bibliography: false
+editor: visual
+# bibliography: references.bib
+csl: abnt2023.csl
 ---
+
+\newpage
+\listofequations
+\newpage
+
 
 ```{r}
 library(tidyverse)
@@ -15,17 +57,15 @@ library(writexl)
 ```
 
 
-# Importando precos
 ```{r}
+# Importando preços
 company_codes <- read_csv("company_codes.csv")
 
-# Baixando precos com Quantmod
+# Baixando preços com Quantmod
 getSymbols(company_codes$Company_Code, from = "2018-01-01", to = "2024-10-30", src = "yahoo")
 
 # Calculando spread com Ardia e CS
 bidask::spread(SBSP3.SA[,1:4], method = "EDGE", width = 21, na.rm = TRUE)
-
-
 
 ```
 
@@ -224,7 +264,32 @@ Por outro lado, o EDGE mantém estimativas não viesadas independentemente do n�
 
 Esses resultados destacam a importância de selecionar estimadores adequados ao contexto de negociação dos ativos analisados, sendo o EDGE uma alternativa superior ao CS em cenários de baixa liquidez.
 
-Se o Marcus me passar o template, não precisarei usar, mas a princípio está o código da tabela para usar no excel/word
+# Introdução
+
+# Objetivos
+
+## Gerais
+
+## Específicos
+
+# Justificativa
+
+# Referencial Teórico
+
+# Metodologia
+
+# Limitações
+
+# Discussão
+
+# Conclusão
+
+# Conclusão
+
+\newpage
+
+# Bibliografia
+
 
 # Exportar o data frame stats_table para um arquivo Excel
 write_xlsx(stats_table, "tabela1.xlsx")

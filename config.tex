@@ -1,0 +1,51 @@
+\usepackage{tocloft}
+\usepackage{titletoc}
+\usepackage{sectsty}
+\usepackage{fancyhdr}
+\usepackage{etoolbox}
+\usepackage{float}
+\usepackage[hyphens]{url}
+\usepackage[breaklinks]{hyperref}
+
+% Remove recuos e define margens zero
+\setlength{\cftbeforetoctitleskip}{0pt}
+\setlength{\cftaftertoctitleskip}{1em}
+
+% Define formato dos títulos com espaço para numeração e tamanho 12pt
+\titlecontents{section}[2.3em]{\fontsize{12}{14}\selectfont}
+{\contentslabel{2.3em}}{}{\titlerule*[1pc]{.}\contentspage}[\vspace{0.5em}]
+\sectionfont{\fontsize{12}{14}\selectfont\bfseries}
+
+\titlecontents{figure}[2.3em]{\fontsize{12}{14}\selectfont}
+{\contentslabel{2.3em}}{}{\titlerule*[1pc]{.}\contentspage}[\vspace{0.5em}]
+
+\titlecontents{table}[2.3em]{\fontsize{12}{14}\selectfont}
+{\contentslabel{2.3em}}{}{\titlerule*[1pc]{.}\contentspage}[\vspace{0.5em}]
+
+% Formata títulos das listas
+\renewcommand{\cfttoctitlefont}{\fontsize{12}{14}\selectfont\textbf}
+\renewcommand{\cftloftitlefont}{\fontsize{12}{14}\selectfont\textbf}
+\renewcommand{\cftlottitlefont}{\fontsize{12}{14}\selectfont\textbf}
+
+% Lista de equações
+\newcommand{\listequationsname}{\fontsize{12}{14}\selectfont\textbf{LISTA DE EQUAÇÕES}}
+\newlistof{equations}{equ}{\listequationsname}
+\newcommand{\equations}[1]{%
+\addcontentsline{equ}{equations}{\protect\numberline{\theequation}#1}\par}
+
+% Configuração da numeração das páginas
+\fancypagestyle{plain}{%
+    \fancyhf{}%
+    \fancyheadoffset[R]{0cm}%
+    \renewcommand{\headrulewidth}{0pt}% Remove linha do cabeçalho
+    \fancyhead[R]{%
+        \ifnum\value{page}<10
+            \phantom{\thepage}
+        \else
+            \thepage
+        \fi
+    }%
+}
+
+\pagestyle{plain}
+\setcounter{page}{2}
