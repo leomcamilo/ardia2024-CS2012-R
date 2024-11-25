@@ -3,7 +3,7 @@ title: dissertação
 author: Leonardo Camilo-da-Silva
 date: today
 execute: 
-  freeze: auto
+  freeze: true     # auto
   echo: false      # Ocultar códigos dos chunks
   warning: false   # Suprimir avisos
   message: false   # Suprimir mensagens
