@@ -306,11 +306,16 @@ tabela1 <- stats_table %>%
 
 ```
 
+:::{#tbl-basmin}
 ```{r}
 tabela1
 ```
+Fonte: Elaborado pelo autor
 
-Ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+Tabela indicando as principais estatísticas 
+:::
+
+Como visto na @tbl-basmin, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
 
 Segundo Ardia et al. (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
 
