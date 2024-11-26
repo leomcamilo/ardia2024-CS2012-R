@@ -59,14 +59,6 @@ library(gt)
 library(writexl)
 ```
 
-```{r, include = FALSE}
-# Importando preços
-company_codes <- read_csv("company_codes.csv")
-
-# Baixando preços com Quantmod
-getSymbols(company_codes$Company_Code, from = "2018-01-01", to = "2024-10-30", src = "yahoo")
-
-```
 
 ```{r, include = FALSE}
 # Importar códigos de empresas
@@ -77,9 +69,38 @@ safe_getSymbols <- safely(function(symbol) {
   getSymbols(symbol, src = "yahoo", from = "2017-01-01", to = "2024-10-30", auto.assign = FALSE)
 })
 
+# Baixar e salvar os preços de cada empresa em um arquivo CSV separado
+company_codes$Company_Code %>% 
+  walk(~ {
+    result <- safe_getSymbols(.x)
+    if (!is.null(result$result)) {
+      data <- result$result
+      write.csv(data, file = paste0("prices-companies/", .x, ".csv"), row.names = FALSE, sep = ";")
+    } else {
+      message("Erro ao baixar dados para: ", .x)
+    }
+  })
+```
+
+
+```{r, include = FALSE}
+# Importar códigos de empresas novamente
+company_codes <- read_csv("company_codes.csv")
+
+# Função para ler dados de arquivos CSV
+read_company_data <- function(symbol) {
+  file_path <- paste0("prices-companies/", symbol, ".csv")
+  if (file.exists(file_path)) {
+    read_csv(file_path)
+  } else {
+    message("Arquivo não encontrado para: ", symbol)
+    NULL
+  }
+}
+
 # Aplicar a função a todos os códigos de empresas usando purrr::map
 company_data_list <- company_codes$Company_Code %>%
-  map(~ safe_getSymbols(.x))
+  map(~ read_company_data(.x))
 
 # Extrair os resultados bem-sucedidos e Nomear a lista com os códigos das empresas
 company_data_clean <- company_data_list %>%
@@ -217,30 +238,84 @@ Os objetivos específicos, usados para responder às perguntas de pesquisa serã
 ## Hipótese de eficiência de mercado
 
 De acordo com Fama (1970) a Hipótese de eficiência de mercado propõe que os investidores do mercado irão fazer a melhor alocação de ativos possível com todas as informações relevantes que terão acesso, e os preços dos ativos irá refletir todas as informações disponíveis para os investidores, que se basearão na teoria econômica para realizar tais cálculos. Em Finanças, a HEM (Hipótese da Eficiência de Mercado) afirma que os mercados financeiros são "eficientes em relação à informação". Ou seja, um agente não consegue alcançar consistentemente retornos superiores à média do mercado, considerando as informações publicamente disponíveis no momento em que o investimento é feito (Fama, 1965; Malkiel, 2007; Jensen, 1978).
+
 Existem três versões principais da hipótese: a fraca, a semi-forte e a forte. A hipótese fraca considera que os preços negociados para os bens (por exemplo, ações, obrigações ou propriedade) refletem toda a informação histórica disponível publicamente. Em seu trabalho seminal, Fama (1965) demonstra que os preços em mercados eficientes seguem um passeio aleatório, refletindo todas as informações históricas disponíveis, o que implica que os preços futuros não podem ser previstos com base em padrões passados.
+
 A hipótese semi-forte afirma que os preços refletem todas as informações publicamente disponíveis e que os preços mudam instantaneamente para refletir as novas informações públicas. Esse conceito é extensivamente discutido no trabalho de Fama (1970), onde ele categoriza a eficiência de mercado em formas fraca, semi-forte e forte. A forma semi-forte da HEM sugere que nem mesmo a análise fundamentalista pode proporcionar vantagens, pois todas as informações disponíveis publicamente já estão incorporadas nos preços dos ativos. Estudos empíricos, como os de Malkiel (2007), corroboram essa visão ao demonstrar que as tentativas de prever movimentos de preços com base em análises fundamentais geralmente não resultam em retornos acima da média.
+
 Embora a hipótese de eficiência de mercado proponha que os preços dos ativos refletem todas as informações disponíveis, o bid-ask spread é um fator crucial que pode introduzir ineficiências no mercado. Custos de transação elevados, informação assimétrica, baixa liquidez e problemas de microestrutura do mercado são elementos que podem ampliar o spread e impedir que os preços se ajustem rapidamente às novas informações. Isso sugere que, na prática, os mercados podem não ser tão eficientes quanto a teoria propõe, e os investidores precisam considerar esses fatores ao tomar decisões de investimento.
 
 ## Microestrutura de mercado
 
 A microestrutura de mercado é um campo de estudo que analisa os mecanismos e processos pelos quais os preços dos ativos são formados nos mercados financeiros. Este campo abrange uma variedade de tópicos, incluindo a organização e funcionamento dos mercados, o comportamento dos participantes do mercado, e os custos de transação. Segundo Harris (2003), a microestrutura de mercado examina como a estrutura do mercado e os mecanismos de negociação afetam a formação de preços, a liquidez e a eficiência do mercado. Compreender a microestrutura é fundamental para analisar como as informações são incorporadas nos preços e como os custos de transação influenciam as decisões de investimento. Os mercados financeiros podem ser organizados de várias maneiras, incluindo mercados de leilão e mercados de dealer. Em mercados de leilão, como as bolsas de valores, os preços são estabelecidos através de leilões competitivos, onde compradores e vendedores submetem ordens que são combinadas para formar o preço de mercado. Nos mercados de dealer, como o mercado de câmbio, os dealers fornecem liquidez ao comprar e vender ativos de seu próprio inventário. Harris (2003) destaca a importância do livro de ordens, que registra todas as ordens de compra e venda pendentes e desempenha um papel crucial na determinação dos preços de mercado. A liquidez do mercado, definida por como a facilidade com que um ativo pode ser comprado ou vendido sem causar uma mudança significativa em seu preço, é fortemente influenciada pela microestrutura do mercado (Harris, 2003). Chordia, et. al (2000) mostram que a estrutura do mercado e a presença de intermediários financeiros desempenham um papel vital na determinação da liquidez. A presença de market makers, por exemplo, pode aumentar a liquidez ao fornecer cotações firmes de compra e venda e ao absorver temporariamente desequilíbrios entre oferta e demanda. Além disso, a profundidade do livro de ordens e a quantidade de informações disponíveis aos participantes do mercado também afetam a liquidez. Os custos de transação são um componente crucial da microestrutura de mercado e têm um impacto significativo na eficiência do mercado. Stoll (1989) e Glosten e Milgrom (1985) identificam três principais componentes dos custos de transação: custos de processamento das ordens, custos de assimetria de informação e custos de inventário. Os custos de processamento referem-se aos custos operacionais incorridos pelos intermediários ao executar ordens de compra e venda. Os custos de assimetria de informação surgem da incerteza sobre a informação que outros participantes do mercado possuem. Já os custos de inventário são os custos associados à manutenção de um estoque de ativos para facilitar a negociação. A eficiência do mercado é afetada por esses custos, pois eles influenciam a capacidade dos preços refletirem todas as informações disponíveis.
+
 As inovações tecnológicas, particularmente o trading eletrônico e os algoritmos de negociação, têm transformado a microestrutura dos mercados financeiros. Hendershott, Jones e Menkveld (2011) investigam o impacto do trading algorítmico na liquidez do mercado e concluem que ele melhora a liquidez ao aumentar a frequência e a velocidade das transações. A introdução de plataformas de negociação eletrônica reduziu os custos de transação e aumentou a transparência do mercado, permitindo uma melhor incorporação de informações nos preços. No entanto, essas inovações também trazem desafios, como a necessidade de regulamentos adequados para mitigar os riscos associados ao trading de alta frequência e para garantir a estabilidade do mercado.
 
 ## Spread de oferta e compra (bid-ask spread)
 
 Custos de inventário ou de estoque, segundo De Jong e Rindi (2009), existem apenas em mercados quote-driven, pois nesses mercados os formadores têm a obrigação de fornecer preços de compra e preços de venda ininterruptamente ao mercado. Os custos relacionados à assimetria de informação e de transação ou de processamento de ordens existem em qualquer mercado. O mercado de ações da B3 é order-driven e nesse caso não se identifica o custo de estoque.
+
 Nos mercados quote-driven, também conhecidos como mercados de dealer, um intermediário (dealer) participa de todas as transações. Nesse tipo de mercado, os traders negociam diretamente com o dealer, que fornece cotações dos preços de compra e venda, assumindo o lado oposto de cada transação e, assim, proporcionando liquidez ao mercado. Esses mercados são comuns no comércio de moedas estrangeiras e títulos no mercado de balcão (OTC).
+
 Por outro lado, nos mercados order-driven, os compradores e vendedores negociam diretamente entre si, sem a intervenção de um dealer, utilizando um conjunto de regras de negociação estabelecidas. Essas regras incluem precedência de ordens, que determina como as ordens de compra e venda são casadas, e regras de precificação de transações. Os mercados order-driven são prevalentes em bolsas de futuros, ações e opções, bem como em redes eletrônicas de comunicação para negociação de títulos e moedas. Em suma, a principal diferença reside no papel do intermediário: enquanto nos mercados quote-driven o dealer facilita todas as transações fornecendo cotações, nos mercados order-driven, as transações são realizadas diretamente entre os traders com base em regras de mercado (Peat, 2009).
+
 No contexto do mercado de ações no Brasil, a B3 adota um modelo de mercado order-driven, mas algumas ações contam com a presença de formadores de mercado. Os formadores de mercado, ou market makers, são contratados pelas empresas para aumentar a liquidez de suas ações. A liquidez refere-se à facilidade com que um ativo pode ser comprado ou vendido sem causar uma mudança significativa em seu preço (Harris, 2003). A presença de um formador de mercado pode reduzir o spread de compra e venda, o que diminui os custos de transação para os investidores e aumenta a atratividade da ação. Empresas contratam formadores de mercado para aumentar a liquidez de suas ações, melhorar a precificação e atrair mais investidores, especialmente em períodos de baixa negociação ou para novos papéis que estão sendo introduzidos no mercado.
+
 A assimetria de informação, por sua vez, ocorre quando diferentes participantes do mercado têm diferentes níveis de acesso à informação relevante para a precificação dos ativos. Nos mercados order-driven, a assimetria de informação pode ser mitigada pela transparência do livro de ordens e pelas regras claras de negociação. No entanto, a assimetria ainda pode existir, especialmente em mercados menos líquidos ou em ações com menor cobertura de analistas. Em mercados quote-driven, a assimetria de informação pode ser mais pronunciada, pois os dealers podem ter acesso a informações privilegiadas que não estão disponíveis para todos os participantes do mercado.
+
 Além disso, os custos de transação referem-se aos custos associados à realização de uma transação econômica, que incluem os custos de negociação e de contratação (Demsetz, 1968). Esses custos incluem taxas pagas à bolsa, comissões de corretagem e custos relacionados ao tempo e esforço necessários para processar as ordens. Em mercados order-driven como a B3, esses custos podem ser reduzidos pela automação e eficiência das plataformas de negociação eletrônica, que facilitam a correspondência rápida e precisa das ordens de compra e venda.
+
 Em suma, a presença de formadores de mercado em ações na B3 visa principalmente aumentar a liquidez, reduzir o spread de compra e venda e melhorar a eficiência do mercado. Ao contratar formadores de mercado, as empresas buscam criar um ambiente de negociação mais ativo e atraente para os investidores, promovendo assim uma melhor precificação e maior volume de negociações. A compreensão dos diferentes custos associados ao spread de compra e venda, bem como das diferenças entre mercados quote-driven e order-driven, é essencial para avaliar o impacto da microestrutura de mercado na formação de preços dos ativos financeiros.
 
 ## Revisão de literatura
 
+Para aprofundar a compreensão do tema de pesquisa, foi realizada uma revisão narrativa da literatura nas bases de dados Web of Science, Scopus, Periódicos Capes e Google Scholar. A RNL, diferentemente da RSL, não se baseia em uma metodologia rígida e pré-definida como o PRISMA. Essa abordagem permite uma maior flexibilidade na seleção dos estudos, possibilitando a inclusão de trabalhos que, embora não tenham sido publicados em periódicos indexados, contribuem significativamente para o entendimento do tema.
+
+A escolha da RNL se justifica pela necessidade de construir um panorama mais amplo e abrangente sobre o bid-ask spread no contexto brasileiro, onde a literatura ainda é incipiente. Ao adotar essa abordagem, foi possível identificar tanto os estudos mais recentes e rigorosos quanto aqueles que, por sua natureza exploratória, podem oferecer insights valiosos para a pesquisa.
+
+O processo de revisão narrativa seguiu as seguintes etapas:
+
+1. Definição da pergunta de pesquisa: O estudo buscou responder à seguinte questão: "O artigo identificou que o bid-ask spread é importante para a formação de preços?".
+2. Elaboração da estratégia de busca: Foram utilizadas palavras-chave específicas, como "[inserir suas palavras-chave]", para identificar os estudos relevantes nas bases de dados mencionadas.
+3. Seleção dos estudos: A seleção dos artigos foi realizada com base na relevância para a pergunta de pesquisa e na disponibilidade do texto completo.
+4. Análise narrativa: Os estudos selecionados foram analisados de forma qualitativa, buscando identificar como cada um aborda a relação entre o bid-ask spread e a formação de preços.
+5. Síntese dos achados: Os resultados da análise foram sintetizados, destacando os principais achados, as lacunas na literatura e as implicações para futuras pesquisas.
 ### Procedimentos e questões de pesquisa
 
 ### Seleção de artigos
+Para a construção desta revisão narrativa de literatura, serão utilizados artigos seminais que estabelecem a base teórica e metodológica do estudo sobre o bid-ask spread. Estes artigos são fundamentais para compreender as evoluções conceituais e as principais contribuições no campo da formação de preços e liquidez de mercado. Na @tbl-atgseminal está os artigos seminais selecionados:
+
+:::{#tbl-atgseminal}
+```{r}
+tabela-artigos-seminais <- data.frame(
+  Título = c("The Cost of Transacting", 
+             "A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market", 
+             "The Components of the Bid-Ask Spread: A General Approach", 
+             "A Simple Way to Estimate Bid-Ask Spreads from Daily High and Low Prices", 
+             "The Effects of Stock Splits on Bid-Ask Spreads", 
+             "A Simple Estimation of Bid-Ask Spreads from Daily Close, High, and Low Prices", 
+             "Price, Trade Size and Information in Securities Markets", 
+             "Bid, Ask and Transaction Prices in a Specialist Market with Heterogeneously Informed Traders", 
+             "A SHARP model of bid-ask spread forecasts", 
+             "Efficient Estimation of Bid-Ask Spreads from Open, High, Low, and Close Prices"),
+  Autores = c("H. Demsetz", 
+              "R. Roll", 
+              "R. D. Huang, H. R. Stoll", 
+              "S. A. Corwin, P. Schultz", 
+              "R. M. Conroy, R. M. Harris, B. A. Benet", 
+              "ABDI, F.; RANALDO, A", 
+              "EASLEY, D.; O’HARA, M.", 
+              "GLOSTEN, L.; MILGROM, P.", 
+              "CATTIVELLI, L.; PIRINO, D.", 
+              "ARDIA, D.; GUIDOTTI, E.; KROENCKE, T."),
+  Ano = c(1968, 1984, 1997, 2012, 1990, 2017, 1987, 1984, 2019, 2023)
+  )
+
+```
+Fonte: Elaborado pelos autores
+
+Artigos seminais selecionados
+:::
 
 ### Extração de dados
 
@@ -254,7 +329,7 @@ Em suma, a presença de formadores de mercado em ações na B3 visa principalmen
 
 # Discussão
 
-<!-- Montando a tabela 1 -->
+<!-- Montando a tabela de estatísticas -->
 
 ```{r}
 # Atribuir grupos de volumes aos dados de spreads
