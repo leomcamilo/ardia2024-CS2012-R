@@ -397,20 +397,20 @@ company_spreads_df <- company_spreads_df %>%
     TRUE ~ "Todos"
   ))
 
-# Calcular as estatísticas para cada grupo e método
+# Calcular as estatísticas para cada grupo e método com 4 casas decimais
 stats_table <- company_spreads_df %>%
   group_by(Group) %>%
   summarise(
-    Média_EDGE = mean(Spread_EDGE, na.rm = TRUE),
-    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
-    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
-    Máximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
-    Mínimo_EDGE = min(Spread_EDGE, na.rm = TRUE),
-    Média_CS = mean(Spread_CS, na.rm = TRUE),
-    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
-    Mediana_CS = median(Spread_CS, na.rm = TRUE),
-    Máximo_CS = max(Spread_CS, na.rm = TRUE),
-    Mínimo_CS = min(Spread_CS, na.rm = TRUE)
+    Média_EDGE = round(mean(Spread_EDGE, na.rm = TRUE), 4),
+    DesvPad_EDGE = round(sd(Spread_EDGE, na.rm = TRUE), 4),
+    Mediana_EDGE = round(median(Spread_EDGE, na.rm = TRUE), 4),
+    Máximo_EDGE = round(max(Spread_EDGE, na.rm = TRUE), 4),
+    Mínimo_EDGE = round(min(Spread_EDGE, na.rm = TRUE), 4),
+    Média_CS = round(mean(Spread_CS, na.rm = TRUE), 4),
+    DesvPad_CS = round(sd(Spread_CS, na.rm = TRUE), 4),
+    Mediana_CS = round(median(Spread_CS, na.rm = TRUE), 4),
+    Máximo_CS = round(max(Spread_CS, na.rm = TRUE), 4),
+    Mínimo_CS = round(min(Spread_CS, na.rm = TRUE), 4)
   ) %>%
   ungroup()
 
@@ -422,43 +422,80 @@ stats_table$Group <- factor(stats_table$Group,
 
 stats_table <- stats_table %>% arrange(Group)
 
-# Create the table with merged column headings
-tabela1 <- stats_table %>%
+# Dividir a stats_table em duas tabelas separadas
+stats_table_EDGE <- stats_table %>%
+  select(Group, Média_EDGE, DesvPad_EDGE, Mediana_EDGE, Máximo_EDGE, Mínimo_EDGE)
+
+stats_table_CS <- stats_table %>%
+  select(Group, Média_CS, DesvPad_CS, Mediana_CS, Máximo_CS, Mínimo_CS)
+
+# Criar a tabela para EDGE
+tabela_EDGE <- stats_table_EDGE %>%
   gt(rowname_col = "Group") %>%
   tab_spanner(
     label = "EDGE",
     columns = c("Média_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Máximo_EDGE", "Mínimo_EDGE")
-  ) %>%
-  tab_spanner(
-    label = "CS",
-    columns = c("Média_CS", "DesvPad_CS", "Mediana_CS", "Máximo_CS", "Mínimo_CS")
   ) %>%
   cols_label(
     Média_EDGE = "Média",
     DesvPad_EDGE = "DesvPad",
     Mediana_EDGE = "Mediana",
     Máximo_EDGE = "Máximo",
-    Mínimo_EDGE = "Mínimo",
+    Mínimo_EDGE = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Média_EDGE, DesvPad_EDGE, Mediana_EDGE, Máximo_EDGE, Mínimo_EDGE) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Média_EDGE, DesvPad_EDGE, Mediana_EDGE, Máximo_EDGE, Mínimo_EDGE),
+    decimals = 4
+  )
+
+# Criar a tabela para CS
+tabela_CS <- stats_table_CS %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "CS",
+    columns = c("Média_CS", "DesvPad_CS", "Mediana_CS", "Máximo_CS", "Mínimo_CS")
+  ) %>%
+  cols_label(
     Média_CS = "Média",
     DesvPad_CS = "DesvPad",
     Mediana_CS = "Mediana",
     Máximo_CS = "Máximo",
     Mínimo_CS = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Média_CS, DesvPad_CS, Mediana_CS, Máximo_CS, Mínimo_CS) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Média_CS, DesvPad_CS, Mediana_CS, Máximo_CS, Mínimo_CS),
+    decimals = 4
   )
 
 ```
 
-::: {#tbl-basmin}
+::: {#tbl-estatsedge}
 ```{r}
-tabela1
+tabela_EDGE
 ```
 
 Fonte: Elaborado pelo autor
 
-Tabela indicando as principais estatísticas
+Tabela indicando as principais estatísticas do método EDGE
 :::
 
-Como visto na @tbl-basmin, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+::: {#tbl-estatscs}
+```{r}
+tabela_CS
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método CS
+:::
+
+Como visto na @tbl-estatsedge e na @tbl-estatscs, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
 
 Segundo Ardia et al. (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
 
