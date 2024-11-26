@@ -59,8 +59,7 @@ library(gt)
 library(writexl)
 ```
 
-
-```{r, include = FALSE}
+```{r, include = FALSE, warning=FALSE, eval = FALSE}
 # Importar códigos de empresas
 company_codes <- read_csv("company_codes.csv")
 
@@ -75,15 +74,15 @@ company_codes$Company_Code %>%
     result <- safe_getSymbols(.x)
     if (!is.null(result$result)) {
       data <- result$result
-      write.csv(data, file = paste0("prices-companies/", .x, ".csv"), row.names = FALSE, sep = ";")
+      data <- data.frame(Date = index(data), coredata(data))  # Adicionar a coluna de data
+      write.csv(data, file = paste0("prices-companies/", .x, ".csv"), row.names = FALSE)
     } else {
       message("Erro ao baixar dados para: ", .x)
     }
   })
 ```
 
-
-```{r, include = FALSE}
+```{r, include = FALSE, show_col_types=FALSE}
 # Importar códigos de empresas novamente
 company_codes <- read_csv("company_codes.csv")
 
@@ -102,10 +101,16 @@ read_company_data <- function(symbol) {
 company_data_list <- company_codes$Company_Code %>%
   map(~ read_company_data(.x))
 
-# Extrair os resultados bem-sucedidos e Nomear a lista com os códigos das empresas
+# Função para remover linhas com valores NA de um dataframe
+remove_na_rows <- function(df) {
+  df %>% drop_na()
+}
+
+# Filtrar elementos NULL e remover linhas com valores NA
 company_data_clean <- company_data_list %>%
-  map("result") %>%
-  set_names(company_codes$Company_Code)
+  keep(~ !is.null(.x)) %>%
+  map(~ remove_na_rows(.x)) %>%
+  set_names(company_codes$Company_Code[!map_lgl(company_data_list, is.null)])
 
 # Verificar quais downloads falharam
 errors <- company_data_list %>%
@@ -173,12 +178,22 @@ company_data_clean_low_volume <- company_data_clean[low_volume]
 <!--Cálculo dos spreads EDGE e CS para toda a base-->
 
 ```{r}
+
+# Função para converter dataframe em xts
+convert_to_xts <- function(df) {
+  xts(df[, -1], order.by = as.Date(df$Date))
+}
+
+# Converter os dataframes em company_data_clean para xts
+company_data_clean_xts <- company_data_clean %>%
+  map(~ convert_to_xts(.x))
+
 # Calcular os spreads para cada empresa
-company_spreads_EDGE <- company_data_clean %>%
+company_spreads_EDGE <- company_data_clean_xts %>%
   map(~ bidask::spread(.x[, 1:4], method = "EDGE", width = 21, na.rm = TRUE))
 
 # Calcular o spread com method "CS" para cada empresa em company_spreads
-company_spreads_CS <- company_data_clean %>%
+company_spreads_CS <- company_data_clean_xts %>%
   map(~ bidask::spread(.x[, 1:4], method = "CS", width = 21, na.rm = TRUE))
 
 # Juntar company_spreads e company_spreads_CS no mesmo dataframe com colunas de Data, Código, Spread_EDGE e Spread_CS
@@ -275,19 +290,15 @@ A escolha da RNL se justifica pela necessidade de construir um panorama mais amp
 
 O processo de revisão narrativa seguiu as seguintes etapas:
 
-1. Definição da pergunta de pesquisa: O estudo buscou responder à seguinte questão: "O artigo identificou que o bid-ask spread é importante para a formação de preços?".
-2. Elaboração da estratégia de busca: Foram utilizadas palavras-chave específicas, como "[inserir suas palavras-chave]", para identificar os estudos relevantes nas bases de dados mencionadas.
-3. Seleção dos estudos: A seleção dos artigos foi realizada com base na relevância para a pergunta de pesquisa e na disponibilidade do texto completo.
-4. Análise narrativa: Os estudos selecionados foram analisados de forma qualitativa, buscando identificar como cada um aborda a relação entre o bid-ask spread e a formação de preços.
-5. Síntese dos achados: Os resultados da análise foram sintetizados, destacando os principais achados, as lacunas na literatura e as implicações para futuras pesquisas.
-### Procedimentos e questões de pesquisa
+1.  Definição da pergunta de pesquisa: O estudo buscou responder à seguinte questão: "O artigo identificou que o bid-ask spread é importante para a formação de preços?".
+2.  Elaboração da estratégia de busca: Foram utilizadas palavras-chave específicas, como "\[inserir suas palavras-chave\]", para identificar os estudos relevantes nas bases de dados mencionadas.
+3.  Seleção dos estudos: A seleção dos artigos foi realizada com base na relevância para a pergunta de pesquisa e na disponibilidade do texto completo.
+4.  Análise narrativa: Os estudos selecionados foram analisados de forma qualitativa, buscando identificar como cada um aborda a relação entre o bid-ask spread e a formação de preços.
+5.  Síntese dos achados: Os resultados da análise foram sintetizados, destacando os principais achados, as lacunas na literatura e as implicações para futuras pesquisas. \### Procedimentos e questões de pesquisa
 
-### Seleção de artigos
-Para a construção desta revisão narrativa de literatura, serão utilizados artigos seminais que estabelecem a base teórica e metodológica do estudo sobre o bid-ask spread. Estes artigos são fundamentais para compreender as evoluções conceituais e as principais contribuições no campo da formação de preços e liquidez de mercado. Na @tbl-atgseminal está os artigos seminais selecionados:
 
-:::{#tbl-atgseminal}
 ```{r}
-tabela-artigos-seminais <- data.frame(
+TabelaArtigosSeminais <- data.frame(
   Título = c("The Cost of Transacting", 
              "A Simple Implicit Measure of the Effective Bid-Ask Spread in an Efficient Market", 
              "The Components of the Bid-Ask Spread: A General Approach", 
@@ -311,11 +322,57 @@ tabela-artigos-seminais <- data.frame(
   Ano = c(1968, 1984, 1997, 2012, 1990, 2017, 1987, 1984, 2019, 2023)
   )
 
+# Renderizar a tabela usando gt
+gt_TabelaArtigosSeminais <- TabelaArtigosSeminais %>%
+  gt() %>%
+  tab_header(
+    title = "Artigos Seminais Selecionados"
+  ) %>%
+  cols_label(
+    Título = "Título",
+    Autores = "Autores",
+    Ano = "Ano"
+  )
+
+```
+
+::: {#tbl-atgseminal}
+```{r}
+# Renderizar a tabela usando gt
+gt_TabelaArtigosSeminais <- TabelaArtigosSeminais %>%
+  gt() %>%
+  tab_header(
+    title = "Artigos Seminais Selecionados"
+  ) %>%
+  cols_label(
+    Título = "Título",
+    Autores = "Autores",
+    Ano = "Ano"
+  ) %>%
+  cols_width(
+    Título ~ px(200),  # Definir a largura da coluna Título
+    Autores ~ px(150), # Definir a largura da coluna Autores
+    Ano ~ px(50)       # Definir a largura da coluna Ano
+  ) %>%
+  text_transform(
+    locations = cells_body(columns = c(Título, Autores)),
+    fn = function(x) {
+      gsub(" ", "\n", x)  # Quebrar o texto dentro das células
+    }
+  )
+
+# Exibir a tabela
+gt_TabelaArtigosSeminais
 ```
 Fonte: Elaborado pelos autores
 
 Artigos seminais selecionados
 :::
+
+
+### Seleção de artigos
+
+Para a construção desta revisão narrativa de literatura, serão utilizados artigos seminais que estabelecem a base teórica e metodológica do estudo sobre o bid-ask spread. Estes artigos são fundamentais para compreender as evoluções conceituais e as principais contribuições no campo da formação de preços e liquidez de mercado. Na @tbl-atgseminal está os artigos seminais selecionados:
 
 ### Extração de dados
 
@@ -391,13 +448,14 @@ tabela1 <- stats_table %>%
 
 ```
 
-:::{#tbl-basmin}
+::: {#tbl-basmin}
 ```{r}
 tabela1
 ```
+
 Fonte: Elaborado pelo autor
 
-Tabela indicando as principais estatísticas 
+Tabela indicando as principais estatísticas
 :::
 
 Como visto na @tbl-basmin, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
