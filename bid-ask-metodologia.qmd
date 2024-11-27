@@ -245,8 +245,7 @@ Os objetivos específicos, usados para responder às perguntas de pesquisa serã
 
 1.  Avaliar qual metodologia de estimativa de spread bid-ask se aproxima mais dos valores de referência fornecidos pela Bloomberg.
 2.  Analisar o comportamento do bid-ask spread em três períodos distintos: pré-COVID-19, durante a pandemia e no período pós-COVID-19.
-3.  Investigar o desempenho de estimadores de spread bid-ask em função da liquidez dos ativos, especialmente em ações com baixa frequência de negociações.
-4.  Comparar as vantagens e limitações de estimadores consagrados na literatura, como o EDGE e o CS, em cenários de diferentes frequências de negociação no mercado brasileiro.
+3.  Comparar as vantagens e limitações de estimadores consagrados na literatura, como o EDGE, de Ardia, Guidotti e Kroencke (2024), o Corwin e Schultz (2012) e o Abdi e Ranaldo (2017) em cenários de diferentes frequências de negociação no mercado brasileiro.
 
 # Referencial teórico
 
@@ -296,7 +295,6 @@ O processo de revisão narrativa seguiu as seguintes etapas:
 4.  Análise narrativa: Os estudos selecionados foram analisados de forma qualitativa, buscando identificar como cada um aborda a relação entre o bid-ask spread e a formação de preços.
 5.  Síntese dos achados: Os resultados da análise foram sintetizados, destacando os principais achados, as lacunas na literatura e as implicações para futuras pesquisas. \### Procedimentos e questões de pesquisa
 
-
 ```{r}
 TabelaArtigosSeminais <- data.frame(
   Título = c("The Cost of Transacting", 
@@ -308,7 +306,8 @@ TabelaArtigosSeminais <- data.frame(
              "Price, Trade Size and Information in Securities Markets", 
              "Bid, Ask and Transaction Prices in a Specialist Market with Heterogeneously Informed Traders", 
              "A SHARP model of bid-ask spread forecasts", 
-             "Efficient Estimation of Bid-Ask Spreads from Open, High, Low, and Close Prices"),
+             "Efficient Estimation of Bid-Ask Spreads from Open, High, Low, and Close Prices",
+             "Comparision of Bid-Ask Spread Proxies Evidence From Borsa Istanbul Futures"),
   Autores = c("H. Demsetz", 
               "R. Roll", 
               "R. D. Huang, H. R. Stoll", 
@@ -318,26 +317,37 @@ TabelaArtigosSeminais <- data.frame(
               "EASLEY, D.; O’HARA, M.", 
               "GLOSTEN, L.; MILGROM, P.", 
               "CATTIVELLI, L.; PIRINO, D.", 
-              "ARDIA, D.; GUIDOTTI, E.; KROENCKE, T."),
-  Ano = c(1968, 1984, 1997, 2012, 1990, 2017, 1987, 1984, 2019, 2023)
+              "ARDIA, D.; GUIDOTTI, E.; KROENCKE, T.",
+              "GULOGLU, Z.C.; EKINCI, C."),
+  Ano = c(1968, 1984, 1997, 2012, 1990, 2017, 1987, 1984, 2019, 2023, 2016)
   )
 
-# Renderizar a tabela usando gt
-gt_TabelaArtigosSeminais <- TabelaArtigosSeminais %>%
-  gt() %>%
-  tab_header(
-    title = "Artigos Seminais Selecionados"
-  ) %>%
-  cols_label(
-    Título = "Título",
-    Autores = "Autores",
-    Ano = "Ano"
-  )
+# Criar a tabela com os dados fornecidos
+TabelaArtigosBrasileiros <- data.frame(
+  Título = c(
+    "The adverse selection cost component of the spread of Brazilian stocks",
+    "Corwin-Schultz Bid-ask Spread Estimator in the Brazilian Stock Market",
+    "Asymmetric information and daily stock prices in Brazil",
+    "Determinantes da Liquidez de Mercado de Ações Negociadas na BM&FBOVESPA",
+    "Como o Fator de Iliquidez afeta o Retorno das Ações Brasileiras - Estudo Empírico",
+    "O apreçamento do spread de liquidez no mercado secundário de debêntures",
+    "Análise dos principais componentes do bid-ask spread de opções sobre ações no mercado brasileiro",
+    "Determinantes da remuneração do spread de certificados de recebíveis do agronegócio no mercado brasileiro"
+  ),
+  Autores = c(
+    "ARAÚJO, G.; BARBEDO, C.; VICENTE, J.",
+    "RIPAMONTI, A.",
+    "ICHIMURA, D.; VIDEIRA, R.; RIPAMONTI, A.",
+    "CORREIA, L.; AMARAL, H.",
+    "OLIVEIRA, R.; GONÇALVES, P.; SHENG, H.; PINTO, P.",
+    "TOLEDO, R.",
+    "PINTO, P.",
+    "TOLEDO, R."
+  ),
+  Ano = c(2014, 2016, 2020, 2014, 2018, 2010, 2018, 2016),
+  stringsAsFactors = FALSE
+)
 
-```
-
-::: {#tbl-atgseminal}
-```{r}
 # Renderizar a tabela usando gt
 gt_TabelaArtigosSeminais <- TabelaArtigosSeminais %>%
   gt() %>%
@@ -350,8 +360,8 @@ gt_TabelaArtigosSeminais <- TabelaArtigosSeminais %>%
     Ano = "Ano"
   ) %>%
   cols_width(
-    Título ~ px(200),  # Definir a largura da coluna Título
-    Autores ~ px(150), # Definir a largura da coluna Autores
+    Título ~ px(300),  # Definir a largura da coluna Título
+    Autores ~ px(200), # Definir a largura da coluna Autores
     Ano ~ px(50)       # Definir a largura da coluna Ano
   ) %>%
   text_transform(
@@ -361,24 +371,124 @@ gt_TabelaArtigosSeminais <- TabelaArtigosSeminais %>%
     }
   )
 
+# Renderizar a tabela usando o pacote gt
+gt_TabelaArtigosBrasileiros <- TabelaArtigosBrasileiros %>%
+  gt() %>%
+  tab_header(
+    title = "Artigos Seminais Selecionados"
+  ) %>%
+  cols_label(
+    Título = "Título",
+    Autores = "Autores",
+    Ano = "Ano"
+  ) %>%
+  cols_width(
+    Título ~ px(300),  # Definir a largura da coluna Título
+    Autores ~ px(200), # Definir a largura da coluna Autores
+    Ano ~ px(100)       # Definir a largura da coluna Ano
+  ) %>%
+  tab_source_note(
+    source_note = "Fonte: Elaborado pelos autores"
+  ) %>%
+  fmt_markdown(
+    columns = Título
+  ) %>%
+  text_transform(
+    locations = cells_body(columns = Autores),
+    fn = function(x) {
+      gsub("; ", ";\n", x)  # Quebrar linha após cada ponto e vírgula nos autores
+    }
+  )
+
+
+```
+
+::: {#tbl-atgseminal}
+```{r}
+
 # Exibir a tabela
 gt_TabelaArtigosSeminais
 ```
+
 Fonte: Elaborado pelos autores
 
 Artigos seminais selecionados
 :::
 
+::: {#tbl-atgbrasileiros}
+```{r}
+# Exibir a tabela
+gt_TabelaArtigosBrasileiros
+```
+
+Fonte: Elaborado pelos autores
+
+Artigos brasileiros selecionados
+:::
 
 ### Seleção de artigos
 
-Para a construção desta revisão narrativa de literatura, serão utilizados artigos seminais que estabelecem a base teórica e metodológica do estudo sobre o bid-ask spread. Estes artigos são fundamentais para compreender as evoluções conceituais e as principais contribuições no campo da formação de preços e liquidez de mercado. Na @tbl-atgseminal está os artigos seminais selecionados:
+Para a construção desta revisão narrativa de literatura, serão utilizados artigos seminais que estabelecem a base teórica e metodológica do estudo sobre o bid-ask spread. Estes artigos são fundamentais para compreender as evoluções conceituais e as principais contribuições no campo da formação de preços e liquidez de mercado. A @tbl-atgseminal apresenta os artigos seminais selecionados.
+
+Além disso, reconhecendo a necessidade de contextualizar o estudo para o mercado brasileiro, foram incluídos artigos e dissertações que abordassem o bid-ask spread no contexto específico do Brasil. A @tbl-atgbrasileiros lista os estudos brasileiros selecionados, destacando aqueles que oferecem insights específicos sobre as particularidades do mercado financeiro brasileiro.
+
+Os critérios de inclusão e exclusão também foram claramente definidos: foram incluídos estudos que abordassem diretamente a relação entre o *bid-ask spread* e a formação de preços, utilizando uma variedade de metodologias e tipos de dados. Estudos que não apresentavam análise empírica ou que não estavam disponíveis em texto completo foram excluídos. A seleção final dos estudos considerou a relevância para a pergunta de pesquisa principal, "O artigo identificou que *bid-ask spread* é importante para a formação de preços?", e a disponibilidade de acesso ao texto completo.
+
+A @tbl-atgseminal e @tbl-atgbrasileiros mostram em sua totalidade, os estudos que serão abordados e analisados considerando o tema *bid-ask spread* e sua relação com a formação de preços. Todos os estudos estão em concordância com a questão central da pesquisa, e serão analisados considerando a influência direta do spread para a formação de preços.
 
 ### Extração de dados
 
+Para esta etapa, foram selecionados 19 artigos que foram integralmente revisados. Com base nessa revisão, extraímos as seguintes informações pertinentes à análise do *bid-ask spread* e sua influência na formação de preços:
+
+-   Quais métodos foram empregados?
+
+-    Quais tipos de dados foram utilizados? Alta ou Baixa frequência.
+
+-   Quais mercados foram examinados?
+
+-   Quais aspectos do *bid-ask spread* foram analisados?
+
+-   O *bid-ask spread* é considerado relevante para a formação de preço?
+
 ### Resultados
 
+Os resultados da Revisão Narrativa de Literatura (RNL) sobre o *bid-ask spread* revelam uma diversidade de métodos, tipos de dados, mercados examinados e aspectos analisados. A análise dos artigos selecionados demonstra a complexidade e a importância do *bid-ask spread* nos mercados financeiros, refletindo diferentes abordagens metodológicas e contextos de aplicação.
+
+Os artigos analisados incluem trabalhos como o de Corwin e Schultz (2012), que apresentam um método para estimar o *bid-ask spread* utilizando dados de baixa frequência, e Roll (1984), que introduz um estimador baseado na covariância serial dos retornos. Além disso, estudos de alta frequência, como o de Huang (1997) e Holden e Jacobsen (2014), utilizam dados do livro de ordens para fornecer proxies explícitas do preço fundamental e calcular a distância dos preços de transação a partir dele. A amostra também abrange pesquisas recentes, como a de Ardia, et. al (2023), que aplicam estimadores generalizados de spread para analisar a volatilidade e a liquidez nos mercados de ações. A diversidade de metodologias e a aplicação em diferentes contextos de mercado proporcionam uma visão abrangente e detalhada sobre o impacto do *bid-ask spread* na formação de preços de ativos financeiros.
+
+A relação inversa entre a liquidez de um ativo e seu *bid-ask spread* é destacada em pesquisas como as de Roll (1984) e Huang (1997), que demonstram que mercados com spreads menores tendem a ser mais líquidos, permitindo transações com menor impacto nos preços. Pesquisas contemporâneas, como as de Ardia, et. al (2023), indicam que o *bid-ask spread* está correlacionado com a volatilidade do mercado. Spreads mais altos frequentemente refletem uma maior incerteza sobre o valor fundamental dos ativos, resultando em maior volatilidade nos preços de mercado. A análise de diferentes mercados, como NYSE, AMEX, NASDAQ e mercados internacionais como Hong Kong e Índia, revela que o impacto do *bid-ask spread* varia conforme as características específicas de cada mercado, incluindo regulação, nível de transparência e estrutura de mercado.
+
+Os métodos empregados nos estudos variaram significativamente, com uma predominância de modelos econométricos, especialmente regressões de Mínimos Quadrados Ordinários (MQO). Outros métodos incluíram a simulação de Monte Carlo para estimar preços de ativos considerando custos transacionais, a metodologia de Fama e MacBeth para analisar variáveis em seções cruzadas e séries temporais, a metodologia de Amihud e Mendelson para calcular o impacto dos custos de transação no *bid-ask spread*, e estimativas implícitas como a de Roll (1984) para calcular spreads a partir de dados de preços diários. Essas abordagens permitiram uma análise abrangente dos fatores que influenciam o *bid-ask spread*, proporcionando uma compreensão aprofundada de sua dinâmica nos mercados financeiros. Embora a maioria dos métodos utilizados fosse econométrica, é importante notar que, dos dez estudos que empregaram métodos econométricos, apenas quatro utilizaram dados de baixa frequência. Destes quatro, dois não foram aplicados ao mercado de ações, mas sim ao mercado de debêntures e ao mercado de certificados de recebíveis do agronegócio.
+
+::: {#img-grafbarravertmetod}
+```{r}
+# Criar o data frame com os dados
+metodologias <- data.frame(
+  Categoria = c("Econométrico", "Bid-ask"),
+  Valor = c(10, 9)
+)
+
+# Criar o gráfico de barras
+ggplot(metodologias, aes(x = Categoria, y = Valor, fill = Categoria)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Metodologias", x = "Categoria", y = "Valor") +
+  theme_minimal()
+```
+
+Fonte: Elaborado pelos autores
+
+Gráfico de barras de metologias econométricas e de cálculo do bid-ask spread dos artigos analisados no estudo
+:::
+
 ### Discussão
+
+O objetivo desta RNL é identificar o impacto do *bid-ask spread* na formação de preços de ativos financeiros, com foco no mercado de açõesdê , seguindo uma abordagem qualitativa e descritiva que busca explorar e sintetizar os principais achados e teorias relacionadas ao tema. A RNL é interessante por permitir maior flexibilidade na seleção e análise dos estudos, proporcionando uma visão abrangente e interpretativa do fenômeno.
+
+A discussão sobre o *bid-ask spread* é importante porque ele introduz ineficiências no mercado, impedindo que os preços se ajustem rapidamente às novas informações. Isso sugere que, na prática, os mercados podem não ser tão eficientes quanto a teoria propõe, e os investidores precisam considerar esses fatores ao tomar decisões de investimento.
+
+Os resultados deste trabalho sugerem que o *bid-ask spread* desempenha um papel crucial na formação dos preços dos ativos financeiros, afetando tanto a liquidez quanto os custos de transação nos mercados financeiros. A metodologia mais utilizada foi a de regressões de Mínimos Quadrados Ordinários (MQO) para analisar os dados e calcular a influência do spread. Em relação aos tipos de dados utilizados, a maioria dos estudos empregou dados de baixa frequência, como preços diários de abertura, fechamento, máximo e mínimo dos ativos negociados. Os aspectos do *bid-ask spread* analisados foram igualmente variados, mas os estudos focaram principalmente no aspecto do custo de transação. De maneira geral, os estudos concordam que o *bid-ask spread* é um indicador importante de liquidez e custos de transação, influenciando diretamente a eficiência do mercado e a formação de preços.
+
+Considerando a Revisão Narrativa de Literatura, este estudo aplica três métodos e os compara para estimar o bid-ask spread utilizando dados de baixa frequência. A escolha por dados de baixa frequência deve-se à dificuldade de acesso a dados de alta frequência no Brasil, limitando análises mais detalhadas. Além disso, a literatura sobre bid-ask spread no mercado acionário brasileiro é escassa, exigindo a adaptação de métodos utilizados nos EUA para a realidade brasileira.
 
 # Metodologia
 
