@@ -196,14 +196,38 @@ company_spreads_EDGE <- company_data_clean_xts %>%
 company_spreads_CS <- company_data_clean_xts %>%
   map(~ bidask::spread(.x[, 1:4], method = "CS", width = 21, na.rm = TRUE))
 
-# Juntar company_spreads e company_spreads_CS no mesmo dataframe com colunas de Data, Código, Spread_EDGE e Spread_CS
-company_spreads_df <- map2_dfr(company_spreads_EDGE, company_spreads_CS, ~ {
-  data_frame(
-    Date = index(.x),
-    Spread_EDGE = .x,
-    Spread_CS = .y
-  )
-}, .id = "Company_Code")
+# Calcular o spread com method "AR" para cada empresa em company_spreads
+company_spreads_AR <- company_data_clean_xts %>%
+  map(~ bidask::spread(.x[, 1:4], method = "AR", width = 21, na.rm = TRUE))
+
+# Combine os spreads em uma lista de listas
+company_spreads_list <- list(
+  EDGE = company_spreads_EDGE,
+  CS = company_spreads_CS,
+  AR = company_spreads_AR
+)
+
+# Obtenha os códigos das empresas
+company_codes <- names(company_spreads_EDGE)
+
+# Use pmap_dfr para combinar os spreads em um único dataframe
+company_spreads_df <- pmap_dfr(
+  .l = list(
+    company_code = company_codes,
+    edge = company_spreads_EDGE,
+    cs = company_spreads_CS,
+    ar = company_spreads_AR
+  ),
+  .f = function(company_code, edge, cs, ar) {
+    data.frame(
+      Company_Code = company_code,
+      Date = index(edge),
+      Spread_EDGE = as.numeric(edge),
+      Spread_CS = as.numeric(cs),
+      Spread_AR = as.numeric(ar)
+    )
+  }
+)
 
 # Calcular os spreads médios para cada ano em cada método e aplicar na variável company_spreads_year
 company_spreads_year <- company_spreads_df %>%
@@ -211,7 +235,8 @@ company_spreads_year <- company_spreads_df %>%
   group_by(Company_Code, Year) %>%
   summarise(
     Spread_EDGE = mean(Spread_EDGE, na.rm = TRUE),
-    Spread_CS = mean(Spread_CS, na.rm = TRUE)
+    Spread_CS = mean(Spread_CS, na.rm = TRUE),
+    Spread_AR = mean(Spread_AR, na.rm = TRUE),
   )
 
 # Filtrar o company_spread_df para high_volume e low_volume
@@ -442,7 +467,7 @@ Para esta etapa, foram selecionados 19 artigos que foram integralmente revisados
 
 -   Quais métodos foram empregados?
 
--    Quais tipos de dados foram utilizados? Alta ou Baixa frequência.
+-   Quais tipos de dados foram utilizados? Alta ou Baixa frequência.
 
 -   Quais mercados foram examinados?
 
@@ -454,9 +479,9 @@ Para esta etapa, foram selecionados 19 artigos que foram integralmente revisados
 
 Os resultados da Revisão Narrativa de Literatura (RNL) sobre o *bid-ask spread* revelam uma diversidade de métodos, tipos de dados, mercados examinados e aspectos analisados. A análise dos artigos selecionados demonstra a complexidade e a importância do *bid-ask spread* nos mercados financeiros, refletindo diferentes abordagens metodológicas e contextos de aplicação.
 
-Os artigos analisados incluem trabalhos como o de Corwin e Schultz (2012), que apresentam um método para estimar o *bid-ask spread* utilizando dados de baixa frequência, e Roll (1984), que introduz um estimador baseado na covariância serial dos retornos. Além disso, estudos de alta frequência, como o de Huang (1997) e Holden e Jacobsen (2014), utilizam dados do livro de ordens para fornecer proxies explícitas do preço fundamental e calcular a distância dos preços de transação a partir dele. A amostra também abrange pesquisas recentes, como a de Ardia, et. al (2023), que aplicam estimadores generalizados de spread para analisar a volatilidade e a liquidez nos mercados de ações. A diversidade de metodologias e a aplicação em diferentes contextos de mercado proporcionam uma visão abrangente e detalhada sobre o impacto do *bid-ask spread* na formação de preços de ativos financeiros.
+Os artigos analisados incluem trabalhos como o de Corwin e Schultz (2012), que apresentam um método para estimar o *bid-ask spread* utilizando dados de baixa frequência, e Roll (1984), que introduz um estimador baseado na covariância serial dos retornos. Além disso, estudos de alta frequência, como o de Huang (1997) e Holden e Jacobsen (2014), utilizam dados do livro de ordens para fornecer proxies explícitas do preço fundamental e calcular a distância dos preços de transação a partir dele. A amostra também abrange pesquisas recentes, como a de Ardia, Guidotti e Kroencke (2024), que aplicam estimadores generalizados de spread para analisar a volatilidade e a liquidez nos mercados de ações. A diversidade de metodologias e a aplicação em diferentes contextos de mercado proporcionam uma visão abrangente e detalhada sobre o impacto do *bid-ask spread* na formação de preços de ativos financeiros.
 
-A relação inversa entre a liquidez de um ativo e seu *bid-ask spread* é destacada em pesquisas como as de Roll (1984) e Huang (1997), que demonstram que mercados com spreads menores tendem a ser mais líquidos, permitindo transações com menor impacto nos preços. Pesquisas contemporâneas, como as de Ardia, et. al (2023), indicam que o *bid-ask spread* está correlacionado com a volatilidade do mercado. Spreads mais altos frequentemente refletem uma maior incerteza sobre o valor fundamental dos ativos, resultando em maior volatilidade nos preços de mercado. A análise de diferentes mercados, como NYSE, AMEX, NASDAQ e mercados internacionais como Hong Kong e Índia, revela que o impacto do *bid-ask spread* varia conforme as características específicas de cada mercado, incluindo regulação, nível de transparência e estrutura de mercado.
+A relação inversa entre a liquidez de um ativo e seu *bid-ask spread* é destacada em pesquisas como as de Roll (1984) e Huang (1997), que demonstram que mercados com spreads menores tendem a ser mais líquidos, permitindo transações com menor impacto nos preços. Pesquisas contemporâneas, como as de Ardia, Guidotti e Kroencke (2024), indicam que o *bid-ask spread* está correlacionado com a volatilidade do mercado. Spreads mais altos frequentemente refletem uma maior incerteza sobre o valor fundamental dos ativos, resultando em maior volatilidade nos preços de mercado. A análise de diferentes mercados, como NYSE, AMEX, NASDAQ e mercados internacionais como Hong Kong e Índia, revela que o impacto do *bid-ask spread* varia conforme as características específicas de cada mercado, incluindo regulação, nível de transparência e estrutura de mercado.
 
 Os métodos empregados nos estudos variaram significativamente, com uma predominância de modelos econométricos, especialmente regressões de Mínimos Quadrados Ordinários (MQO). Outros métodos incluíram a simulação de Monte Carlo para estimar preços de ativos considerando custos transacionais, a metodologia de Fama e MacBeth para analisar variáveis em seções cruzadas e séries temporais, a metodologia de Amihud e Mendelson para calcular o impacto dos custos de transação no *bid-ask spread*, e estimativas implícitas como a de Roll (1984) para calcular spreads a partir de dados de preços diários. Essas abordagens permitiram uma análise abrangente dos fatores que influenciam o *bid-ask spread*, proporcionando uma compreensão aprofundada de sua dinâmica nos mercados financeiros. Embora a maioria dos métodos utilizados fosse econométrica, é importante notar que, dos dez estudos que empregaram métodos econométricos, apenas quatro utilizaram dados de baixa frequência. Destes quatro, dois não foram aplicados ao mercado de ações, mas sim ao mercado de debêntures e ao mercado de certificados de recebíveis do agronegócio.
 
@@ -496,6 +521,8 @@ Considerando a Revisão Narrativa de Literatura, este estudo aplica três métod
 
 # Discussão
 
+Ardia, Guidotti e Kroencke (2024) discutem que o EDGE é superior em resultados, principalmente quando se trata de períodos de alta volatilidade...
+
 <!-- Montando a tabela de estatísticas -->
 
 ```{r}
@@ -511,16 +538,21 @@ company_spreads_df <- company_spreads_df %>%
 stats_table <- company_spreads_df %>%
   group_by(Group) %>%
   summarise(
-    Média_EDGE = round(mean(Spread_EDGE, na.rm = TRUE), 4),
-    DesvPad_EDGE = round(sd(Spread_EDGE, na.rm = TRUE), 4),
-    Mediana_EDGE = round(median(Spread_EDGE, na.rm = TRUE), 4),
-    Máximo_EDGE = round(max(Spread_EDGE, na.rm = TRUE), 4),
-    Mínimo_EDGE = round(min(Spread_EDGE, na.rm = TRUE), 4),
-    Média_CS = round(mean(Spread_CS, na.rm = TRUE), 4),
-    DesvPad_CS = round(sd(Spread_CS, na.rm = TRUE), 4),
-    Mediana_CS = round(median(Spread_CS, na.rm = TRUE), 4),
-    Máximo_CS = round(max(Spread_CS, na.rm = TRUE), 4),
-    Mínimo_CS = round(min(Spread_CS, na.rm = TRUE), 4)
+    Media_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
+    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
+    Maximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
+    Minimo_EDGE = min(Spread_EDGE, na.rm = TRUE),
+    Media_CS = mean(Spread_CS, na.rm = TRUE),
+    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
+    Mediana_CS = median(Spread_CS, na.rm = TRUE),
+    Maximo_CS = max(Spread_CS, na.rm = TRUE),
+    Minimo_CS = min(Spread_CS, na.rm = TRUE),
+    Media_AR = mean(Spread_AR, na.rm = TRUE),
+    DesvPad_AR = sd(Spread_AR, na.rm = TRUE),
+    Mediana_AR = median(Spread_AR, na.rm = TRUE),
+    Maximo_AR = max(Spread_AR, na.rm = TRUE),
+    Minimo_AR = min(Spread_AR, na.rm = TRUE)
   ) %>%
   ungroup()
 
@@ -534,31 +566,34 @@ stats_table <- stats_table %>% arrange(Group)
 
 # Dividir a stats_table em duas tabelas separadas
 stats_table_EDGE <- stats_table %>%
-  select(Group, Média_EDGE, DesvPad_EDGE, Mediana_EDGE, Máximo_EDGE, Mínimo_EDGE)
+  select(Group, Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE)
 
 stats_table_CS <- stats_table %>%
-  select(Group, Média_CS, DesvPad_CS, Mediana_CS, Máximo_CS, Mínimo_CS)
+  select(Group, Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS)
+
+stats_table_AR <- stats_table %>%
+  select(Group, Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR)
 
 # Criar a tabela para EDGE
 tabela_EDGE <- stats_table_EDGE %>%
   gt(rowname_col = "Group") %>%
   tab_spanner(
     label = "EDGE",
-    columns = c("Média_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Máximo_EDGE", "Mínimo_EDGE")
+    columns = c("Media_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Maximo_EDGE", "Minimo_EDGE")
   ) %>%
   cols_label(
-    Média_EDGE = "Média",
+    Media_EDGE = "Média",
     DesvPad_EDGE = "DesvPad",
     Mediana_EDGE = "Mediana",
-    Máximo_EDGE = "Máximo",
-    Mínimo_EDGE = "Mínimo"
+    Maximo_EDGE = "Máximo",
+    Minimo_EDGE = "Mínimo"
   ) %>%
   cols_width(
-    c(Média_EDGE, DesvPad_EDGE, Mediana_EDGE, Máximo_EDGE, Mínimo_EDGE) ~ px(80)
+    c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE) ~ px(80)
   ) %>%
   fmt_number(
-    columns = c(Média_EDGE, DesvPad_EDGE, Mediana_EDGE, Máximo_EDGE, Mínimo_EDGE),
-    decimals = 4
+    columns = c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE),
+    decimals = 6
   )
 
 # Criar a tabela para CS
@@ -566,21 +601,43 @@ tabela_CS <- stats_table_CS %>%
   gt(rowname_col = "Group") %>%
   tab_spanner(
     label = "CS",
-    columns = c("Média_CS", "DesvPad_CS", "Mediana_CS", "Máximo_CS", "Mínimo_CS")
+    columns = c("Media_CS", "DesvPad_CS", "Mediana_CS", "Maximo_CS", "Minimo_CS")
   ) %>%
   cols_label(
-    Média_CS = "Média",
+    Media_CS = "Média",
     DesvPad_CS = "DesvPad",
     Mediana_CS = "Mediana",
-    Máximo_CS = "Máximo",
-    Mínimo_CS = "Mínimo"
+    Maximo_CS = "Máximo",
+    Minimo_CS = "Mínimo"
   ) %>%
   cols_width(
-    c(Média_CS, DesvPad_CS, Mediana_CS, Máximo_CS, Mínimo_CS) ~ px(80)
+    c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS) ~ px(80)
   ) %>%
   fmt_number(
-    columns = c(Média_CS, DesvPad_CS, Mediana_CS, Máximo_CS, Mínimo_CS),
-    decimals = 4
+    columns = c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS),
+    decimals = 6
+  )
+
+# Criar a tabela para AR
+tabela_AR <- stats_table_AR %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "AR",
+    columns = c("Media_AR", "DesvPad_AR", "Mediana_AR", "Maximo_AR", "Minimo_AR")
+  ) %>%
+  cols_label(
+    Media_AR = "Média",
+    DesvPad_AR = "DesvPad",
+    Mediana_AR = "Mediana",
+    Maximo_AR = "Máximo",
+    Minimo_AR = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR),
+    decimals = 6
   )
 
 ```
@@ -605,9 +662,19 @@ Fonte: Elaborado pelo autor
 Tabela indicando as principais estatísticas do método CS
 :::
 
-Como visto na @tbl-estatsedge e na @tbl-estatscs, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de (2{,}205289 \times 10\^{-5}) para ativos mais líquidos e (1{,}571447 \times 10\^{-5}) para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia et al. (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+::: {#tbl-estatsar}
+```{r}
+tabela_AR
+```
 
-Segundo Ardia et al. (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método AR
+:::
+
+Como visto na @tbl-estatsedge, @tbl-estatscs e na @tbl-estatsar, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de 2.2 \times 10\^{-5} para ativos mais líquidos e 1,6 \times 10\^{-5} para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia, Guidotti e Kroencke (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+
+Segundo Ardia, Guidotti e Kroencke (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
 
 Por outro lado, o EDGE mantém estimativas não viesadas independentemente do número de negociações, graças a um termo de correção analítico que considera a negociação infrequente. Nossos resultados corroboram essa evidência, mostrando que o EDGE não retorna valores nulos mesmo em ativos com baixa frequência de negociação, ao contrário do CS. Dessa forma, o EDGE se apresenta como uma metodologia mais robusta e apropriada para estimar o spread bid-ask em mercados com ativos menos líquidos.
 
