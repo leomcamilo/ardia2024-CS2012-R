@@ -507,7 +507,7 @@ Gráfico de barras de metologias econométricas e de cálculo do bid-ask spread 
 
 ### Discussão
 
-O objetivo desta RNL é identificar o impacto do *bid-ask spread* na formação de preços de ativos financeiros, com foco no mercado de açõesdê , seguindo uma abordagem qualitativa e descritiva que busca explorar e sintetizar os principais achados e teorias relacionadas ao tema. A RNL é interessante por permitir maior flexibilidade na seleção e análise dos estudos, proporcionando uma visão abrangente e interpretativa do fenômeno.
+O objetivo da RNL é identificar o impacto do *bid-ask spread* na formação de preços de ativos financeiros, com foco no mercado de ações, seguindo uma abordagem qualitativa e descritiva que busca explorar e sintetizar os principais achados e teorias relacionadas ao tema. A RNL é interessante por permitir maior flexibilidade na seleção e análise dos estudos, proporcionando uma visão abrangente e interpretativa do fenômeno.
 
 A discussão sobre o *bid-ask spread* é importante porque ele introduz ineficiências no mercado, impedindo que os preços se ajustem rapidamente às novas informações. Isso sugere que, na prática, os mercados podem não ser tão eficientes quanto a teoria propõe, e os investidores precisam considerar esses fatores ao tomar decisões de investimento.
 
@@ -516,6 +516,54 @@ Os resultados deste trabalho sugerem que o *bid-ask spread* desempenha um papel 
 Considerando a Revisão Narrativa de Literatura, este estudo aplica três métodos e os compara para estimar o bid-ask spread utilizando dados de baixa frequência. A escolha por dados de baixa frequência deve-se à dificuldade de acesso a dados de alta frequência no Brasil, limitando análises mais detalhadas. Além disso, a literatura sobre bid-ask spread no mercado acionário brasileiro é escassa, exigindo a adaptação de métodos utilizados nos EUA para a realidade brasileira.
 
 # Metodologia
+
+Trata-se de um trabalho quantitativo, que baseia-se na quantificação de dados para responder às perguntas (MALHOTRA, 2012). A abordagem foi estruturada em etapas sequenciais, contemplando desde a revisão de literatura até a análise comparativa de metodologias de estimativa do bid-ask spread no mercado brasileiro. Essa abordagem permite não apenas o aprofundamento teórico, mas também a aplicação prática robusta, considerando as particularidades do mercado de ações brasileiro, que apresenta desafios únicos, como baixa liquidez em diversos ativos e eventos externos impactantes, como a pandemia de COVID-19.
+
+Inicialmente, foi realizada uma Revisão Narrativa da Literatura (RNL) para identificar artigos relevantes sobre o tema bid-ask spread voltado para ações negociadas em bolsas de valores. A RNL é uma etapa fundamental, pois permite consolidar o embasamento teórico do trabalho, além de identificar lacunas na literatura que podem ser exploradas. A busca foi conduzida em bases de dados acadêmicas renomadas, como Scopus, Web of Science e Google Scholar, utilizando termos-chave como "bid-ask spread", "liquidity", "transaction costs", e "microstructure." O foco foi dado a metodologias aplicáveis ao mercado financeiro e à comparação entre diferentes estimadores.
+
+Essa etapa permitiu a seleção dos principais artigos que sustentam teoricamente o trabalho, com destaque para as metodologias de Ardia, Guidotti e Kroencke (2024), que desenvolveram o estimador EDGE; Corwin e Schultz (2012), com sua abordagem baseada em preços máximos e mínimos; e Abdi e Ranaldo (2017), que propuseram o uso combinado de preços de fechamento, máximos e mínimos. Cada uma dessas metodologias foi avaliada quanto à sua aplicabilidade ao mercado brasileiro, suas limitações teóricas e práticas, e as condições sob as quais produzem estimativas mais precisas.
+
+A aplicação empírica foi estruturada para garantir rigor na análise e comparabilidade entre os métodos. Utilizou-se o pacote "bidask", desenvolvido por Ardia et al. (2024), no ambiente de programação R. Esse pacote foi escolhido por implementar diretamente a metodologia EDGE, além de suportar as abordagens de Corwin e Schultz (2012) e Abdi e Ranaldo (2017). O R foi selecionado como ferramenta devido à sua flexibilidade para manipulação de dados financeiros e integração com bibliotecas específicas para análise de séries temporais e estatísticas descritivas.
+
+Os dados foram extraídos diretamente da B3 (Bolsa de Valores do Brasil), empregando o pacote "quantmod" (Ryan e Ulrich, 2024), amplamente utilizado para download e manipulação de séries de preços financeiros. Foram obtidos dados de preços de abertura, máxima, mínima, fechamento (OHLC) e volume das ações. A seleção dos ativos analisados foi baseada na disponibilidade de dados de spread fornecidos pela Bloomberg, garantindo uma base consistente para a comparação entre os estimadores.
+
+## Metodologias de Estimativa
+Com os dados coletados, foi realizada a aplicação das estimativas de cálculo de três metodologias principais:
+
+1.	EDGE (Efficient Discrete Generalized Estimator): Desenvolvida por Ardia, Guidotti e Kroencke (2024), essa metodologia combina estimadores para minimizar a variância de estimação e corrige vieses associados à baixa frequência de negociações. Sua abordagem é especialmente útil em mercados emergentes, onde ativos menos líquidos são comuns.
+2.	CS (Corwin e Schultz): Baseada na relação entre preços máximos e mínimos, essa metodologia deriva estimativas do bid-ask spread a partir de janelas de tempo predefinidas. Apesar de ser amplamente utilizada, seu desempenho pode ser prejudicado em mercados de baixa liquidez.
+3.	AR (Abdi e Ranaldo): Incorporando preços de fechamento, máximos e mínimos, essa abordagem busca reduzir o viés presente em estimativas mais simples. No entanto, requer suposições específicas sobre a distribuição dos preços, o que pode limitar sua aplicação em certos contextos.
+A comparação entre as metodologias foi realizada utilizando os valores de referência fornecidos pela Bloomberg como benchmark. Essa análise foi fundamental para avaliar a precisão de cada metodologia e sua adequação ao mercado brasileiro.
+
+A comparação entre as metodologias de estimativa foi realizada utilizando os valores de referência fornecidos pela Bloomberg como benchmark. Esse procedimento foi essencial para avaliar a precisão de cada método e determinar sua adequação às condições específicas do mercado brasileiro. Ao adotar uma referência sólida, foi possível estabelecer um padrão de comparação confiável, permitindo identificar os pontos fortes e limitações de cada estimador em cenários reais de negociação.
+
+Além disso, o comportamento do bid-ask spread foi analisado em três períodos distintos, escolhidos para capturar os impactos de diferentes condições de mercado. No período pré-COVID-19, o mercado apresentou relativa estabilidade, proporcionando uma base para avaliar os métodos em condições normais de negociação. Durante a pandemia, a alta volatilidade e as incertezas econômicas impactaram significativamente a liquidez dos ativos, resultando em alterações nos spreads. No período pós-COVID-19, observou-se uma recuperação gradual do mercado, embora acompanhada por mudanças nos padrões de negociação que demandaram atenção adicional na análise.
+
+Essa abordagem temporal permitiu avaliar como os estimadores respondem a condições extremas de mercado e verificar a consistência de suas estimativas em diferentes contextos de liquidez e volatilidade. Ao integrar a análise das metodologias e dos períodos, o estudo forneceu uma visão abrangente do desempenho das estimativas de bid-ask spread no mercado financeiro brasileiro, contribuindo para a compreensão das dinâmicas desse indicador em um ambiente com características únicas.
+
+## Cálculo do Bid-Ask Spread
+Utilizando o pacote bidask no ambiente de programação R, foram aplicadas as três metodologias selecionadas: EDGE (Ardia, Guidotti e Kroencke, 2024), CS (Corwin e Schultz, 2012) e AR (Abdi e Ranaldo, 2017). O uso de uma janela móvel de 21 dias, representada pelo parâmetro *width* = 21, foi adotado para garantir consistência metodológica e facilitar a comparação com estudos anteriores, como os de Ardia, Guidotti e Kroencke (2024), que seguem o mesmo princípio. Essa configuração considera 21 dias como equivalente a aproximadamente um mês de negociações, com base na prática padrão em mercados financeiros, onde a média de dias úteis de negociação em um mês é de cerca de 21.
+
+Além disso, no estudo de Ardia et al. (2024), a simulação de 10.000 meses de dados é baseada em períodos de 21 dias úteis para representar um mês de negociações. Essa abordagem é consistente com os trabalhos de Corwin e Schultz (2012) e Abdi e Ranaldo (2017), que também utilizam essa mesma configuração temporal em suas análises e simulações. O objetivo é criar uma unidade temporal padronizada que permita avaliar variações no bid-ask spread de maneira comparável ao longo de diferentes períodos e contextos de negociação.
+
+Essa escolha também facilita a análise do impacto de diferentes frequências de negociação, uma vez que uma janela de 21 dias captura tanto oscilações diárias quanto tendências mais amplas em cenários de alta e baixa liquidez. Portanto, a adoção desse parâmetro não só mantém a consistência com a literatura, mas também reflete práticas amplamente aceitas no campo de microestrutura de mercado, garantindo a robustez e a validade dos resultados obtidos no contexto do mercado brasileiro.
+
+O cálculo foi realizado sobre as séries de preços de abertura, máxima, mínima, fechamento (OHLC) e volumes diários obtidos diretamente da B3. As metodologias foram aplicadas sem modificações adicionais, seguindo rigorosamente os algoritmos descritos nos trabalhos originais, de forma a garantir a comparabilidade com os benchmarks teóricos.
+
+## Comparação com o valor de referência e análise de frequência de negociação
+As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do bid-ask spread. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi essencial para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro.
+
+Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
+
+Para aprofundar a análise, as ações foram classificadas com base no volume médio diário de negociação, visando compreender o impacto da liquidez sobre o desempenho dos estimadores. Essa classificação utilizou os quantis dos volumes médios para segmentar os ativos em dois grupos principais:
+
+30% com maiores volumes: Representando ações altamente líquidas.
+
+30% com menores volumes: Representando ações com baixa liquidez.
+
+As estimativas de spread foram analisadas separadamente para cada grupo, permitindo observar como os estimadores se comportam em cenários de alta e baixa liquidez. Essa abordagem revelou que o EDGE apresentou maior robustez em ativos com baixa liquidez, graças à sua capacidade de corrigir vieses associados à frequência reduzida de negociações. Em contrapartida, o CS mostrou limitações significativas, com viés descendente em ativos de menor volume, enquanto o AR apresentou resultados intermediários entre os dois métodos.
+
+Essa análise detalhada forneceu insights sobre a adequação das metodologias a diferentes perfis de ativos no mercado brasileiro, reforçando a importância de considerar a liquidez como um fator determinante na escolha de estimadores para bid-ask spread. Além disso, contribuiu para a identificação de metodologias mais robustas para contextos de baixa liquidez, uma característica comum em mercados emergentes.
 
 # Limitações
 
@@ -685,3 +733,5 @@ Esses resultados destacam a importância de selecionar estimadores adequados ao 
 \newpage
 
 # Bibliografia
+
+RYAN, Jeffrey; ULRICH, Joshua. Quantmod: Quantitative Financial Modelling Framework. Disponível em: https://github.com/joshuaulrich/quantmod. Acesso em: 24 nov. 2024.
