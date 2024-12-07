@@ -45,7 +45,7 @@ toc-depth: 3
 linkcolor: black
 link-bibliography: false
 editor: visual
-# bibliography: references.bib
+bibliography: references.bib
 csl: abnt2023.csl
 ---
 
@@ -536,7 +536,6 @@ ggplot(metodologias, aes(x = Categoria, y = Valor, fill = Categoria)) +
 ```
 
 Fonte: Elaborado pelos autores
-
 :::
 
 Em relação aos tipos de dados utilizados, a maioria dos estudos empregou dados de baixa frequência, como preços diários de abertura, fechamento, máximo e mínimo dos ativos negociados. A utilização de dados diários possibilitou uma análise detalhada do comportamento do spread bid-ask ao longo do tempo, oferecendo insights valiosos sobre sua variabilidade e impacto na formação de preços. Alguns estudos também utilizaram dados de alta frequência, especialmente em mercados mais líquidos, onde a análise de microestrutura do mercado é mais relevante. Essa combinação de dados de baixa e alta frequência forneceu uma base robusta para a investigação dos diferentes aspectos do spread bid-ask.
@@ -562,7 +561,6 @@ ggplot(dados, aes(x = reorder(Categoria, -Valor), y = Valor)) +
 ```
 
 Fonte: Elaborado pelos autores
-
 :::
 
 Os mercados examinados pelos estudos incluíram tanto o mercado brasileiro quanto mercados internacionais. Um número igual de artigos focou-se no mercado de ações e debêntures no Brasil (SND), analisando dados da B3 (Bolsa de Valores do Brasil), e no mercado de ações dos Estados Unidos, especificamente a NYSE, somando 8 artigos cada. Além disso, alguns estudos seminais analisaram mercados europeus, oferecendo uma perspectiva comparativa sobre o spread bid-ask em diferentes contextos econômicos e regulatórios. Essa diversidade de mercados examinados permitiu uma compreensão mais ampla de como o spread bid-ask se comporta em diferentes ambientes de negociação, destacando variações regionais e estruturais.
@@ -590,7 +588,6 @@ ggplot(mercados, aes(x = Categoria, y = Valor)) +
 ```
 
 Fonte: Elaborado pelos autores
-
 :::
 
 Os aspectos do spread bid-ask analisados foram igualmente variados. Os estudos focaram-se em custos de transação, considerando os custos diretos associados ao spread, como taxas de corretagem e impostos. A liquidez do mercado foi outro aspecto central, com ênfase na relação entre spread bid-ask e volume de negociação. Muitos estudos investigaram a assimetria de informação, analisando como a informação desigual entre compradores e vendedores afeta o spread. A relação entre a volatilidade dos preços dos ativos e o spread bid-ask também foi amplamente examinada. Esses aspectos forneceram uma visão holística dos fatores que influenciam o spread bid-ask, elucidando sua importância para a eficiência e funcionamento dos mercados financeiros.
@@ -623,7 +620,6 @@ ggplot(aspectos, aes(x = Valor, y = reorder(Categoria, Valor))) +
 ```
 
 Fonte: Elaborado pelos autores
-
 :::
 
 ## Conclusão
@@ -661,7 +657,6 @@ Medir o bid-ask spread é de extrema relevância para diversos stakeholders no m
 Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do bid-ask spread aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
 
 A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do bid-ask spread. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
-
 
 # Objetivos
 
@@ -964,7 +959,6 @@ Esses achados enfatizam a importância de selecionar metodologias adequadas ao p
 
 ## Análise de período de volatilidade
 
-
 ```{r}
 # Filtrar company_spreads_df para incluir apenas o ano de 2020
 company_spreads_df_2020 <- company_spreads_df %>%
@@ -1096,7 +1090,6 @@ O estimador CS, por sua vez, embora tenha registrado aumentos nos spreads em 202
 
 Os estimadores EDGE e AR demonstraram maior robustez em condições de baixa liquidez e alta volatilidade. O EDGE, com seu termo de correção analítico para negociação infrequente, consegue manter estimativas não viesadas mesmo quando a frequência de negociações diminui. O AR também se mostrou eficaz nesse contexto, estimando spreads maiores que refletem os aumentos nos custos de transação enfrentados pelos investidores.
 
-
 ::: {#tbl-estatsedge20}
 ```{r}
 tabela_EDGE_2020
@@ -1137,7 +1130,7 @@ Um dos aspectos limitadores é que os modelos desenvolvidos por Corwin e Schultz
 
 Adicionalmente, os estimadores baseados em dados de baixa frequência, como os utilizados neste trabalho, podem ser sensíveis a eventos específicos do mercado brasileiro, tais como intervenções regulatórias, volatilidade cambial e impacto de investidores institucionais domésticos. Essas peculiaridades podem introduzir vieses nas estimativas do spread bid-ask, comprometendo a acurácia dos resultados e a validade das conclusões. Por exemplo, a presença de negociações infrequentes ou gaps nos preços pode afetar a performance dos estimadores que assumem certa regularidade nas transações.
 
-No que se refere aos trabalhos de Abdi e Ranaldo (2017) e de Ardia et al. (2024), apesar de apresentarem metodologias robustas para a estimativa do spread bid-ask, suas abordagens podem não considerar fatores específicos presentes no mercado brasileiro. Questões como a estrutura de formação de preços na B3, a concentração de liquidez em determinados horários do pregão e a influência de notícias locais podem impactar a dinâmica dos spreads de maneira diferente do que ocorre em mercados estrangeiros. Além disso, possíveis restrições de acesso a dados granulares no Brasil podem limitar a aplicação direta dos métodos propostos nesses estudos.
+No que se refere aos trabalhos de Abdi e Ranaldo (2017) e de Ardia, Guidotti e Kroencke (2024), apesar de apresentarem metodologias robustas para a estimativa do spread bid-ask, suas abordagens podem não considerar fatores específicos presentes no mercado brasileiro. Questões como a estrutura de formação de preços na B3, a concentração de liquidez em determinados horários do pregão e a influência de notícias locais podem impactar a dinâmica dos spreads de maneira diferente do que ocorre em mercados estrangeiros. Além disso, possíveis restrições de acesso a dados granulares no Brasil podem limitar a aplicação direta dos métodos propostos nesses estudos.
 
 Quanto aos próximos passos incluem a implementação prática dos modelos de estimativa do bid-ask spread utilizando dados do mercado brasileiro. A análise comparativa dos métodos será refinada, com a aplicação de técnicas adicionais de validação estatística. Além disso, o trabalho focará na elaboração do manuscrito final da dissertação, incorporando discussões aprofundadas sobre os resultados obtidos. Por fim, serão realizados ajustes necessários para atender aos requisitos da banca e incluir potenciais contribuições adicionais levantadas durante a qualificação.
 
@@ -1209,7 +1202,70 @@ kable(dados_cronograma, format = "latex", booktabs = FALSE, linesep = "") %>%
   row_spec(c(1,2,3,4,5,6,7,8,9,10,11), hline_after = TRUE)  # Adiciona linhas horizontais após as linhas 2, 4 e 6
 ```
 
+\newpage
 
-# Bibliografia
+# Referências
+
+\setlength{\parindent}{0pt} ABDI, F.; RANALDO, A. A simple estimation of bid-ask spreads from daily close, high, and low prices. \textbf{The review of financial studies}, v. 30, n. 12, p. 4437–4480, 2017.
+
+ARAÚJO, G. S.; BARBEDO, C. H. DA S.; VICENTE, J. V. M. The adverse selection cost component of the spread of Brazilian stocks. \textbf{Emerging markets review}, v. 21, p. 21–41, 2014.
+
+ARDIA, D.; GUIDOTTI, E.; KROENCKE, T. A. Efficient estimation of bid-ask spreads from open, high, low, and close prices. \textbf{SSRN Electronic Journal}, 2023.
+
+BURTON GORDON MALKIEL. \textbf{A random walk down Wall Street : the time- tested strategy for successful investing}. New York: W.W. Norton, 2007.
+
+CATTIVELLI, L.; PIRINO, D. A SHARP model of bid–ask spread forecasts. \textbf{International journal of forecasting}, v. 35, n. 4, p. 1211–1225, 2019.
+
+CHORDIA, T.; ROLL, R.; SUBRAHMANYAM, A. Commonality in liquidity. \textbf{Journal of financial economics}, v. 56, n. 1, p. 3–28, 2000.
+
+CONROY, R. M.; HARRIS, R. S.; BENET, B. A. The effects of stock splits on bid- ask spreads. \textbf{The journal of finance}, v. 45, n. 4, p. 1285–1295, 1990.
+
+CORREIA, L. F.; AMARAL, H. Determinantes da liquidez de mercado de ações negociadas. \textbf{Revista Brasileira de Economia}, v. 68, n. 1, p. 89-110, 2014.
+
+CORWIN, S. A.; SCHULTZ, P. A simple way to estimate bid-ask spreads from daily high and low prices. \textbf{The journal of finance}, v. 67, n. 2, p. 719–760, 2012.
+
+DE JONG, F.; RINDI, B. \textbf{The Microstructure of Financial Markets}. Cambridge: Cambridge University Press, 2009.
+
+DEMSETZ, H. The cost of transacting. \textbf{The Quarterly Journal of Economics}, v. 82, n. 1, p. 33, 1968.
+
+EASLEY, D.; O’HARA, M. Price, trade size, and information in securities markets. \textbf{Journal of financial economics}, v. 19, n. 1, p. 69–90, 1987.
+
+FAMA, E. F. The behavior of stock-market prices. \textbf{The journal of business}, v. 38, n. 1, p. 34, 1965.
+
+FAMA, E. F. Efficient capital markets: A review of theory and empirical work. \textbf{The journal of finance}, v. 25, n. 2, p. 383, 1970.
+
+FERREIRA, E. et al. Impacto assimétrico do sentimento do investidor na volatilidade do mercado acionário brasileiro. \textbf{Revista Brasileira de Gestão de Negócios}, v. 23, n. 2, p. 34-52, 2021.
+
+GEORGE, T. J.; KAUL, G.; NIMALENDRAN, M. Estimation of the Bid-ask Spreads and its Components: A New Approach. \textbf{Review of Financial Studies}, p. 623–656, 1991.
+
+GLOSTEN, L. R.; MILGROM, P. R. Bid, ask and transaction prices in a specialist market with heterogeneously informed traders. \textbf{Journal of financial economics}, v. 14, n. 1, p. 71–100, 1985.
+
+HARRIS, L. \textbf{Trading and Exchanges: Market Microstructure for Practitioners}. Oxford: Oxford University Press, 2003.
+
+HENDERSHOTT, T.; JONES, C. M.; MENKVELD, A. J. Does algorithmic trading improve liquidity? \textbf{The journal of finance}, v. 66, n. 1, p. 1–33, 2011.
+
+HOLDEN, C. W.; JACOBSEN, S. Liquidity measurement problems in fast, competitive markets: Expensive and cheap solutions: Liquidity measurement problems in fast, competitive markets. \textbf{The journal of finance}, v. 69, n. 4, p. 1747–1785, 2014.
+
+HUANG, R. D.; STOLL, H. R. The components of the bid-ask spread: A general approach. \textbf{The review of financial studies}, v. 10, n. 4, p. 995–1034, 1997.
+
+ICHIMURA, D.; VIDEIRA, R.; RIPAMONTI, A. Asymmetric information and daily stock prices in Brazil. \textbf{Estudios gerenciales}, p. 465–472, 2020.
+
+JENSEN, M. C. Some anomalous evidence regarding market efficiency. \textbf{Journal of Financial Economics}, v. 6, n. 2-3, p. 95–101, jun. 1978.
+
+OLIVEIRA, R. \textbf{Como o fator de iliquidez afeta o retorno das ações brasileiras: Estudo Empírico}. São Paulo: Insper, 2018.
+
+PEAT, M. Market data resources for researchers: The SIRCA data repository. \textbf{The Australian economic review}, v. 42, n. 4, p. 490–495, 2009.
+
+PINTO, P. \textbf{Análise dos principais componentes do bid-ask spread de opções sobre ações no mercado brasileiro}. São Paulo: Insper, 2018.
+
+RIPAMONTI, A. Corwin-Schultz bid-ask spread estimator in the Brazilian stock market. \textbf{Brazilian Administration Review}, v. 13, n. 1, p. 76–97, 2016.
+
+ROLL, R. A simple implicit measure of the effective bid-ask spread in an efficient market. \textbf{The journal of finance}, v. 39, n. 4, p. 1127, 1984.
 
 RYAN, Jeffrey; ULRICH, Joshua. Quantmod: Quantitative Financial Modelling Framework. Disponível em: https://github.com/joshuaulrich/quantmod. Acesso em: 24 nov. 2024.
+
+STOIKOV, S. The micro-price: a high-frequency estimator of future prices. \textbf{Quantitative finance}, v. 18, n. 12, p. 1959–1966, 2018.
+
+STOLL, H. R. Inferring the components of the bid-ask spread: Theory and empirical tests. \textbf{The journal of finance}, v. 44, n. 1, p. 115–134, 1989.
+
+TOLEDO, R. \textbf{Determinantes da remuneração do spread de certificados de recebíveis do agronegócio no mercado brasileiro}. São Paulo: Fundação Getúlio Vargas, 2016.
