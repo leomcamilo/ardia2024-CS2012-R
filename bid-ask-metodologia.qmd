@@ -913,6 +913,7 @@ tabela_AR <- stats_table_AR %>%
 
 ::: {#tbl-estatsedge}
 ```{r}
+#| tbl-pos: H
 tabela_EDGE
 ```
 
@@ -923,6 +924,7 @@ Tabela indicando as principais estatísticas do método EDGE
 
 ::: {#tbl-estatscs}
 ```{r}
+#| tbl-pos: H
 tabela_CS
 ```
 
@@ -933,6 +935,7 @@ Tabela indicando as principais estatísticas do método CS
 
 ::: {#tbl-estatsar}
 ```{r}
+#| tbl-pos: H
 tabela_AR
 ```
 
