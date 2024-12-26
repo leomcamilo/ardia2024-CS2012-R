@@ -10,6 +10,10 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{mathtools}
+\usepackage{caption}
+
+% Define o estilo do cabeçalho
+\floatplacement{table}{H}
 
 % Remove recuos e define margens zero
 \setlength{\cftbeforetoctitleskip}{0pt}
@@ -57,3 +61,10 @@
 
 % Define o recuo da primeira linha dos parágrafos como 1.25 cm
 \setlength{\parindent}{1.25cm}
+
+% Espaçamento vertical antes e depois das tabelas
+\setlength{\textfloatsep}{1cm}
+\setlength{\intextsep}{1cm}
+
+% Define um espaçamento de 1cm entre a tabela e a legenda
+\captionsetup[table]{skip=1cm}

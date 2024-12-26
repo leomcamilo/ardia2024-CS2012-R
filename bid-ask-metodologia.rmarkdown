@@ -49,9 +49,13 @@ bibliography: references.bib
 csl: abnt2023.csl
 ---
 
+
+
 \newpage
 \listofequations
 \newpage
+
+
 
 ```{r}
 library(tidyverse)
@@ -180,7 +184,11 @@ company_data_clean_low_volume <- company_data_clean[low_volume]
 
 ```
 
+
+
 <!--Cálculo dos spreads EDGE e CS para toda a base-->
+
+
 
 ```{r}
 
@@ -260,6 +268,8 @@ company_spreads_pos <- company_spreads_year %>%
 
 
 ```
+
+
 
 # Introdução geral
 
@@ -354,6 +364,8 @@ O processo de revisão narrativa seguiu as seguintes etapas:
 3.  Seleção dos estudos: A seleção dos artigos foi realizada com base na relevância para a pergunta de pesquisa e na disponibilidade do texto completo.
 4.  Análise narrativa: Os estudos selecionados foram analisados de forma qualitativa, buscando identificar como cada um aborda a relação entre o spread bid-ask e a formação de preços.
 5.  Síntese dos achados: Os resultados da análise foram sintetizados, destacando os principais achados, as lacunas na literatura e as implicações para futuras pesquisas. \### Procedimentos e questões de pesquisa
+
+
 
 ```{r}
 TabelaArtigosSeminais <- data.frame(
@@ -463,12 +475,18 @@ gt_TabelaArtigosBrasileiros <- TabelaArtigosBrasileiros %>%
 
 ```
 
+
+
 ::: {#tbl-atgseminal}
+
+
 ```{r}
 
 # Exibir a tabela
 gt_TabelaArtigosSeminais
 ```
+
+
 
 Fonte: Elaborado pelos autores
 
@@ -476,10 +494,14 @@ Artigos seminais selecionados
 :::
 
 ::: {#tbl-atgbrasileiros}
+
+
 ```{r}
 # Exibir a tabela
 gt_TabelaArtigosBrasileiros
 ```
+
+
 
 Fonte: Elaborado pelos autores
 
@@ -521,6 +543,8 @@ A relação inversa entre a liquidez de um ativo e seu *spread bid-ask* é desta
 Os métodos empregados nos estudos variaram significativamente, com uma predominância de modelos econométricos, especialmente regressões de Mínimos Quadrados Ordinários (MQO). Outros métodos incluíram a simulação de Monte Carlo para estimar preços de ativos considerando custos transacionais, a metodologia de Fama e MacBeth para analisar variáveis em seções cruzadas e séries temporais, a metodologia de Amihud e Mendelson para calcular o impacto dos custos de transação no *spread bid-ask*, e estimativas implícitas como a de Roll (1984) para calcular spreads a partir de dados de preços diários. Essas abordagens permitiram uma análise abrangente dos fatores que influenciam o *spread bid-ask*, proporcionando uma compreensão aprofundada de sua dinâmica nos mercados financeiros. Embora a maioria dos métodos utilizados fosse econométrica, é importante notar que, dos dez estudos que empregaram métodos econométricos, apenas quatro utilizaram dados de baixa frequência. Destes quatro, dois não foram aplicados ao mercado de ações, mas sim ao mercado de debêntures e ao mercado de certificados de recebíveis do agronegócio.
 
 ::: {#img-grafbarravertmetod}
+
+
 ```{r img-grafbarravertmetod, echo = FALSE, fig.cap="Metodologias econométricas ou de cálculo do spread bid-ask dos artigos analisados no estudo"}
 # Criar o data frame com os dados
 metodologias <- data.frame(
@@ -535,12 +559,16 @@ ggplot(metodologias, aes(x = Categoria, y = Valor, fill = Categoria)) +
   theme_minimal()
 ```
 
+
+
 Fonte: Elaborado pelos autores
 :::
 
 Em relação aos tipos de dados utilizados, a maioria dos estudos empregou dados de baixa frequência, como preços diários de abertura, fechamento, máximo e mínimo dos ativos negociados. A utilização de dados diários possibilitou uma análise detalhada do comportamento do spread bid-ask ao longo do tempo, oferecendo insights valiosos sobre sua variabilidade e impacto na formação de preços. Alguns estudos também utilizaram dados de alta frequência, especialmente em mercados mais líquidos, onde a análise de microestrutura do mercado é mais relevante. Essa combinação de dados de baixa e alta frequência forneceu uma base robusta para a investigação dos diferentes aspectos do spread bid-ask.
 
 ::: {#img-grafbarravertfreq}
+
+
 ```{r img-grafbarravertfreq, echo = FALSE, fig.cap="Dados das frequências dos dados analisados nos estudos"}
 # Dados do gráfico
 # Dados do gráfico
@@ -560,12 +588,16 @@ ggplot(dados, aes(x = reorder(Categoria, -Valor), y = Valor)) +
   theme_minimal()
 ```
 
+
+
 Fonte: Elaborado pelos autores
 :::
 
 Os mercados examinados pelos estudos incluíram tanto o mercado brasileiro quanto mercados internacionais. Um número igual de artigos focou-se no mercado de ações e debêntures no Brasil (SND), analisando dados da B3 (Bolsa de Valores do Brasil), e no mercado de ações dos Estados Unidos, especificamente a NYSE, somando 8 artigos cada. Além disso, alguns estudos seminais analisaram mercados europeus, oferecendo uma perspectiva comparativa sobre o spread bid-ask em diferentes contextos econômicos e regulatórios. Essa diversidade de mercados examinados permitiu uma compreensão mais ampla de como o spread bid-ask se comporta em diferentes ambientes de negociação, destacando variações regionais e estruturais.
 
 ::: {#img-grafbarravertmercest}
+
+
 ```{r img-grafbarravertmercest, echo = FALSE, fig.cap="Dados dos mercados analisados nos estudos"}
 # Criar o data frame com os dados
 mercados <- data.frame(
@@ -587,12 +619,16 @@ ggplot(mercados, aes(x = Categoria, y = Valor)) +
   )
 ```
 
+
+
 Fonte: Elaborado pelos autores
 :::
 
 Os aspectos do spread bid-ask analisados foram igualmente variados. Os estudos focaram-se em custos de transação, considerando os custos diretos associados ao spread, como taxas de corretagem e impostos. A liquidez do mercado foi outro aspecto central, com ênfase na relação entre spread bid-ask e volume de negociação. Muitos estudos investigaram a assimetria de informação, analisando como a informação desigual entre compradores e vendedores afeta o spread. A relação entre a volatilidade dos preços dos ativos e o spread bid-ask também foi amplamente examinada. Esses aspectos forneceram uma visão holística dos fatores que influenciam o spread bid-ask, elucidando sua importância para a eficiência e funcionamento dos mercados financeiros.
 
 ::: {#img-grafbarrahorizaspectos}
+
+
 ```{r img-grafbarrahorizaspectos, echo=FALSE, fig.cap="Aspectos Analisados nos Estudos"}
 # Criar o data frame com os dados
 aspectos <- data.frame(
@@ -618,6 +654,8 @@ ggplot(aspectos, aes(x = Valor, y = reorder(Categoria, Valor))) +
   ) +
   theme_minimal()
 ```
+
+
 
 Fonte: Elaborado pelos autores
 :::
@@ -794,6 +832,8 @@ Ardia, Guidotti e Kroencke (2024) discutem que o EDGE é superior em resultados,
 
 <!-- Montando a tabela de estatísticas -->
 
+
+
 ```{r}
 # Atribuir grupos de volumes aos dados de spreads
 company_spreads_df <- company_spreads_df %>%
@@ -911,11 +951,17 @@ tabela_AR <- stats_table_AR %>%
 
 ```
 
+
+
 ::: {#tbl-estatsedge}
+
+
 ```{r}
 #| tbl-pos: H
 tabela_EDGE
 ```
+
+
 
 Fonte: Elaborado pelo autor
 
@@ -923,10 +969,14 @@ Tabela indicando as principais estatísticas do método EDGE
 :::
 
 ::: {#tbl-estatscs}
+
+
 ```{r}
 #| tbl-pos: H
 tabela_CS
 ```
+
+
 
 <br>
 
@@ -937,10 +987,14 @@ Tabela indicando as principais estatísticas do método CS
 
 
 ::: {#tbl-estatsar}
+
+
 ```{r}
 #| tbl-pos: H
 tabela_AR
 ```
+
+
 
 Fonte: Elaborado pelo autor
 
@@ -964,6 +1018,8 @@ Comparando os três estimadores, nota-se que o CS apresenta limitações signifi
 Esses achados enfatizam a importância de selecionar metodologias adequadas ao perfil de liquidez dos ativos analisados. Enquanto o CS pode ser apropriado para mercados altamente líquidos, o EDGE e o AR demonstram vantagens claras em contextos de menor liquidez, como seria o caso do mercado brasileiro. O fato de o AR estimar spreads maiores pode fornecer insights adicionais sobre a presença de custos de transação elevados e assimetrias informacionais que não são capturadas pelos outros estimadores.
 
 ## Análise de período de volatilidade
+
+
 
 ```{r}
 # Filtrar company_spreads_df para incluir apenas o ano de 2020
@@ -1078,6 +1134,8 @@ tabela_AR_2020 <- stats_table_AR_2020 %>%
 
 ```
 
+
+
 Ao comparar os resultados obtidos para todo o período de análise, de 2017 a 2023, com os resultados específicos do ano de 2020, marcado por alta volatilidade devido à pandemia de COVID-19, observamos certas variações nos spreads bid-ask estimados pelas três metodologias: CS, EDGE e AR.
 
 Em 2020, todos os estimadores registraram um aumento significativo nas médias dos spreads bid-ask em comparação com o período total. Esse aumento é consistente com o contexto de alta volatilidade e incerteza do mercado durante a pandemia.
@@ -1097,9 +1155,13 @@ O estimador CS, por sua vez, embora tenha registrado aumentos nos spreads em 202
 Os estimadores EDGE e AR demonstraram maior robustez em condições de baixa liquidez e alta volatilidade. O EDGE, com seu termo de correção analítico para negociação infrequente, consegue manter estimativas não viesadas mesmo quando a frequência de negociações diminui. O AR também se mostrou eficaz nesse contexto, estimando spreads maiores que refletem os aumentos nos custos de transação enfrentados pelos investidores.
 
 ::: {#tbl-estatsedge20}
+
+
 ```{r}
 tabela_EDGE_2020
 ```
+
+
 
 Fonte: Elaborado pelo autor
 
@@ -1107,9 +1169,13 @@ Tabela indicando as principais estatísticas do método EDGE para o ano de 2020
 :::
 
 ::: {#tbl-estatscs20}
+
+
 ```{r}
 tabela_CS_2020
 ```
+
+
 
 Fonte: Elaborado pelo autor
 
@@ -1117,9 +1183,13 @@ Tabela indicando as principais estatísticas do método CS para o ano de 2020
 :::
 
 ::: {#tbl-estatsar20}
+
+
 ```{r}
 tabela_AR_2020
 ```
+
+
 
 Fonte: Elaborado pelo autor
 
@@ -1159,6 +1229,8 @@ Em suma, este trabalho reforça a relevância do spread bid-ask como elemento fu
 \newpage
 
 # Cronograma da Dissertação (Atualizado)
+
+
 
 ```{r}
 # Instalar pacotes necessários, se ainda não tiver
@@ -1207,6 +1279,8 @@ kable(dados_cronograma, format = "latex", booktabs = FALSE, linesep = "") %>%
   ) %>%
   row_spec(c(1,2,3,4,5,6,7,8,9,10,11), hline_after = TRUE)  # Adiciona linhas horizontais após as linhas 2, 4 e 6
 ```
+
+
 
 \newpage
 
