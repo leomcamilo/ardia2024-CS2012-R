@@ -935,7 +935,6 @@ Fonte: Elaborado pelo autor
 Tabela indicando as principais estatísticas do método CS
 :::
 
-
 ::: {#tbl-estatsar}
 ```{r}
 #| tbl-pos: H

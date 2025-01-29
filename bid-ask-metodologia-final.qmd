@@ -1,0 +1,952 @@
+---
+title: dissertação
+author: Leonardo Camilo-da-Silva
+date: today
+execute: 
+  freeze: true     # auto
+  echo: false      # Ocultar códigos dos chunks
+  warning: false   # Suprimir avisos
+  message: false   # Suprimir mensagens
+  error: false     # Suprimir erros
+format: 
+  # docx:
+  #   toc: true            # Inclui o sumário
+    # reference-doc: template.docx  # (Opcional) Modelo personalizado
+    # Adicione outras opções específicas para o Word aqui
+  pdf:
+    template-partials: 
+    - "before-body.tex" 
+    latex_engine: xelatex
+    mainfont: Times New Roman
+    fontsize: 12pt
+    lineheight: 1.5
+    linestretch: 1.5
+    geometry: "left=3cm, top=3cm, right=2cm, bottom=2cm"
+    keep-tex: false
+    number-sections: true
+    include-in-header: config.tex
+crossref:
+  fig-title: Figura   
+  fig-prefix: figura
+  tbl-title: Tabela     
+  tbl-prefix: tabela
+  lof-title: LISTA DE FIGURAS
+  lot-title: LISTA DE TABELAS
+  eq-title: Equação
+  eq-prefix: equação
+tbl-cap-location: top
+fig-cap-location: top
+lot: true
+lof: true
+listings: true
+toc: true
+toc-title: SUMÁRIO
+toc-depth: 3
+linkcolor: black
+link-bibliography: false
+editor: visual
+bibliography: references.bib
+csl: abnt2023.csl
+---
+
+\newpage
+\listofequations
+\newpage
+
+```{r}
+library(tidyverse)
+library(quantmod)
+library(bidask)
+library(readr)
+library(purrr)
+library(gt)
+library(writexl)
+library(kableExtra)
+```
+
+```{r, include = FALSE, warning=FALSE, eval = FALSE}
+# Importar códigos de empresas
+company_codes <- read_csv("company_codes.csv")
+
+# Função segura para baixar dados
+safe_getSymbols <- safely(function(symbol) {
+  getSymbols(symbol, src = "yahoo", from = "2017-01-01", to = "2024-10-30", auto.assign = FALSE)
+})
+
+# Baixar e salvar os preços de cada empresa em um arquivo CSV separado
+company_codes$Company_Code %>% 
+  walk(~ {
+    result <- safe_getSymbols(.x)
+    if (!is.null(result$result)) {
+      data <- result$result
+      data <- data.frame(Date = index(data), coredata(data))  # Adicionar a coluna de data
+      write.csv(data, file = paste0("prices-companies/", .x, ".csv"), row.names = FALSE)
+    } else {
+      message("Erro ao baixar dados para: ", .x)
+    }
+  })
+```
+
+```{r, include = FALSE, show_col_types=FALSE}
+# Importar códigos de empresas novamente
+company_codes <- read_csv("company_codes.csv")
+
+# Função para ler dados de arquivos CSV
+read_company_data <- function(symbol) {
+  file_path <- paste0("prices-companies/", symbol, ".csv")
+  if (file.exists(file_path)) {
+    read_csv(file_path)
+  } else {
+    message("Arquivo não encontrado para: ", symbol)
+    NULL
+  }
+}
+
+# Aplicar a função a todos os códigos de empresas usando purrr::map
+company_data_list <- company_codes$Company_Code %>%
+  map(~ read_company_data(.x))
+
+# Função para remover linhas com valores NA de um dataframe
+remove_na_rows <- function(df) {
+  df %>% drop_na()
+}
+
+# Filtrar elementos NULL e remover linhas com valores NA
+company_data_clean <- company_data_list %>%
+  keep(~ !is.null(.x)) %>%
+  map(~ remove_na_rows(.x)) %>%
+  set_names(company_codes$Company_Code[!map_lgl(company_data_list, is.null)])
+
+# Verificar quais downloads falharam
+errors <- company_data_list %>%
+  map("error") %>%
+  keep(~ !is.null(.x))
+
+if (length(errors) > 0) {
+  print("Alguns downloads falharam:")
+  print(errors)
+} else {
+  print("Todos os dados foram baixados com sucesso.")
+}
+```
+
+```{=html}
+<!--
+Seleção dos 30% maiores e 30% menores volumes diários; Ou seja, maiores e menores liquidez.
+-->
+```
+
+```{r}
+# Agrupar as empresas com maiores médias de volume diários e selecionar os 30% maiores e 30% menores
+
+# Calcular a média de volume para cada empresa
+company_volumes <- company_data_clean %>%
+  # Extrair a coluna de Volume (coluna 5) de cada dataframe
+  map_dbl(~ mean(.x[[5]], na.rm = TRUE))
+
+# Converter os resultados para um dataframe para melhor manipulação
+company_volumes <- tibble(
+  Company = names(company_data_clean),
+  Mean_Volume = company_volumes
+)
+
+# Definir os percentis de 30% e 70%
+volume_30 <- quantile(company_volumes$Mean_Volume, 0.3, na.rm = TRUE)
+volume_70 <- quantile(company_volumes$Mean_Volume, 0.7, na.rm = TRUE)
+
+# Atribuir cada empresa a um grupo com base na média de volume
+company_volumes <- company_volumes %>%
+  mutate(
+    Group = case_when(
+      Mean_Volume <= volume_30 ~ "Low Volume (Bottom 30%)",
+      Mean_Volume > volume_70 ~ "High Volume (Top 30%)",
+      TRUE ~ "Middle Volume (40%)"
+    )
+  )
+
+# Empresas de baixo volume (Bottom 30%)
+low_volume <- company_volumes %>%
+  filter(Group == "Low Volume (Bottom 30%)") %>%
+  pull(Company)
+
+# Empresas de alto volume (Top 30%)
+high_volume <- company_volumes %>%
+  filter(Group == "High Volume (Top 30%)") %>%
+  pull(Company)
+
+# Criando um company_data_clean_high_volume e company_data_clean_low_volume
+company_data_clean_high_volume <- company_data_clean[high_volume]
+company_data_clean_low_volume <- company_data_clean[low_volume]
+
+```
+
+<!--Cálculo dos spreads EDGE e CS para toda a base-->
+
+```{r}
+
+# Função para converter dataframe em xts
+convert_to_xts <- function(df) {
+  xts(df[, -1], order.by = as.Date(df$Date))
+}
+
+# Converter os dataframes em company_data_clean para xts
+company_data_clean_xts <- company_data_clean %>%
+  map(~ convert_to_xts(.x))
+
+# Calcular os spreads para cada empresa
+company_spreads_EDGE <- company_data_clean_xts %>%
+  map(~ bidask::spread(.x[, 1:4], method = "EDGE", width = 21, na.rm = TRUE))
+
+# Calcular o spread com method "CS" para cada empresa em company_spreads
+company_spreads_CS <- company_data_clean_xts %>%
+  map(~ bidask::spread(.x[, 1:4], method = "CS", width = 21, na.rm = TRUE))
+
+# Calcular o spread com method "AR" para cada empresa em company_spreads
+company_spreads_AR <- company_data_clean_xts %>%
+  map(~ bidask::spread(.x[, 1:4], method = "AR", width = 21, na.rm = TRUE))
+
+# Combine os spreads em uma lista de listas
+company_spreads_list <- list(
+  EDGE = company_spreads_EDGE,
+  CS = company_spreads_CS,
+  AR = company_spreads_AR
+)
+
+# Obtenha os códigos das empresas
+company_codes <- names(company_spreads_EDGE)
+
+# Use pmap_dfr para combinar os spreads em um único dataframe
+company_spreads_df <- pmap_dfr(
+  .l = list(
+    company_code = company_codes,
+    edge = company_spreads_EDGE,
+    cs = company_spreads_CS,
+    ar = company_spreads_AR
+  ),
+  .f = function(company_code, edge, cs, ar) {
+    data.frame(
+      Company_Code = company_code,
+      Date = index(edge),
+      Spread_EDGE = as.numeric(edge),
+      Spread_CS = as.numeric(cs),
+      Spread_AR = as.numeric(ar)
+    )
+  }
+)
+
+# Calcular os spreads médios para cada ano em cada método e aplicar na variável company_spreads_year
+company_spreads_year <- company_spreads_df %>%
+  mutate(Year = year(Date)) %>%
+  group_by(Company_Code, Year) %>%
+  summarise(
+    Spread_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    Spread_CS = mean(Spread_CS, na.rm = TRUE),
+    Spread_AR = mean(Spread_AR, na.rm = TRUE),
+  )
+
+# Filtrar o company_spread_df para high_volume e low_volume
+company_spreads_high_volume <- company_spreads_year %>%
+  filter(Company_Code %in% high_volume)
+company_spreads_low_volume <- company_spreads_year %>%
+  filter(Company_Code %in% low_volume)
+
+# Filtrar o company_spread_year para os anos de 2017 a 2019 (antes da pandemia), para 2020 e 2021 (durante a pandemia) e para 2022 a 2024 (após a pandemia)
+company_spreads_pre <- company_spreads_year %>%
+  filter(Year %in% 2017:2019)
+company_spreads_dur <- company_spreads_year %>%
+  filter(Year %in% 2020:2021)
+company_spreads_pos <- company_spreads_year %>%
+  filter(Year %in% 2022:2024)
+
+
+```
+
+# Introdução
+
+
+# Referencial teórico
+
+
+## Hipótese de eficiência de mercado
+
+De acordo com Fama (1970) a Hipótese de eficiência de mercado propõe que os investidores do mercado irão fazer a melhor alocação de ativos possível com todas as informações relevantes que terão acesso, e os preços dos ativos irá refletir todas as informações disponíveis para os investidores, que se basearão na teoria econômica para realizar tais cálculos. Em Finanças, a HEM (Hipótese da Eficiência de Mercado) afirma que os mercados financeiros são "eficientes em relação à informação". Ou seja, um agente não consegue alcançar consistentemente retornos superiores à média do mercado, considerando as informações publicamente disponíveis no momento em que o investimento é feito (Fama, 1965; Malkiel, 2007; Jensen, 1978).
+
+Existem três versões principais da hipótese: a fraca, a semi-forte e a forte. A hipótese fraca considera que os preços negociados para os bens (por exemplo, ações, obrigações ou propriedade) refletem toda a informação histórica disponível publicamente. Em seu trabalho seminal, Fama (1965) demonstra que os preços em mercados eficientes seguem um passeio aleatório, refletindo todas as informações históricas disponíveis, o que implica que os preços futuros não podem ser previstos com base em padrões passados.
+
+A hipótese semi-forte afirma que os preços refletem todas as informações publicamente disponíveis e que os preços mudam instantaneamente para refletir as novas informações públicas. Esse conceito é extensivamente discutido no trabalho de Fama (1970), onde ele categoriza a eficiência de mercado em formas fraca, semi-forte e forte. A forma semi-forte da HEM sugere que nem mesmo a análise fundamentalista pode proporcionar vantagens, pois todas as informações disponíveis publicamente já estão incorporadas nos preços dos ativos. Estudos empíricos, como os de Malkiel (2007), corroboram essa visão ao demonstrar que as tentativas de prever movimentos de preços com base em análises fundamentais geralmente não resultam em retornos acima da média.
+
+Embora a hipótese de eficiência de mercado proponha que os preços dos ativos refletem todas as informações disponíveis, o spread bid-ask é um fator crucial que pode introduzir ineficiências no mercado. Custos de transação elevados, informação assimétrica, baixa liquidez e problemas de microestrutura do mercado são elementos que podem ampliar o spread e impedir que os preços se ajustem rapidamente às novas informações. Isso sugere que, na prática, os mercados podem não ser tão eficientes quanto a teoria propõe, e os investidores precisam considerar esses fatores ao tomar decisões de investimento.
+
+## Microestrutura de mercado
+
+A microestrutura de mercado é um campo de estudo que analisa os mecanismos e processos pelos quais os preços dos ativos são formados nos mercados financeiros. Este campo abrange uma variedade de tópicos, incluindo a organização e funcionamento dos mercados, o comportamento dos participantes do mercado, e os custos de transação. Segundo Harris (2003), a microestrutura de mercado examina como a estrutura do mercado e os mecanismos de negociação afetam a formação de preços, a liquidez e a eficiência do mercado.
+
+Compreender a microestrutura é fundamental para analisar como as informações são incorporadas nos preços e como os custos de transação influenciam as decisões de investimento. Os mercados financeiros podem ser organizados de várias maneiras, incluindo mercados de leilão e mercados de dealer. Em mercados de leilão, como as bolsas de valores, os preços são estabelecidos através de leilões competitivos, onde compradores e vendedores submetem ordens que são combinadas para formar o preço de mercado. Nos mercados de dealer, como o mercado de câmbio, os dealers fornecem liquidez ao comprar e vender ativos de seu próprio inventário.
+
+Harris (2003) destaca a importância do livro de ordens, que registra todas as ordens de compra e venda pendentes e desempenha um papel crucial na determinação dos preços de mercado. A liquidez do mercado, definida por como a facilidade com que um ativo pode ser comprado ou vendido sem causar uma mudança significativa em seu preço, é fortemente influenciada pela microestrutura do mercado (Harris, 2003). Chordia, et. al (2000) mostram que a estrutura do mercado e a presença de intermediários financeiros desempenham um papel vital na determinação da liquidez. A presença de market makers, por exemplo, pode aumentar a liquidez ao fornecer cotações firmes de compra e venda e ao absorver temporariamente desequilíbrios entre oferta e demanda. Além disso, a profundidade do livro de ordens e a quantidade de informações disponíveis aos participantes do mercado também afetam a liquidez.
+
+Os custos de transação são um componente crucial da microestrutura de mercado e têm um impacto significativo na eficiência do mercado. Stoll (1989) e Glosten e Milgrom (1985) identificam três principais componentes dos custos de transação: custos de processamento das ordens, custos de assimetria de informação e custos de inventário. Os custos de processamento referem-se aos custos operacionais incorridos pelos intermediários ao executar ordens de compra e venda. Os custos de assimetria de informação surgem da incerteza sobre a informação que outros participantes do mercado possuem. Já os custos de inventário são os custos associados à manutenção de um estoque de ativos para facilitar a negociação. A eficiência do mercado é afetada por esses custos, pois eles influenciam a capacidade dos preços refletirem todas as informações disponíveis.
+
+As inovações tecnológicas, particularmente o trading eletrônico e os algoritmos de negociação, têm transformado a microestrutura dos mercados financeiros. Hendershott, Jones e Menkveld (2011) investigam o impacto do trading algorítmico na liquidez do mercado e concluem que ele melhora a liquidez ao aumentar a frequência e a velocidade das transações. A introdução de plataformas de negociação eletrônica reduziu os custos de transação e aumentou a transparência do mercado, permitindo uma melhor incorporação de informações nos preços. No entanto, essas inovações também trazem desafios, como a necessidade de regulamentos adequados para mitigar os riscos associados ao trading de alta frequência e para garantir a estabilidade do mercado.
+
+## Spread de oferta e compra (spread bid-ask)
+
+Custos de inventário ou de estoque, segundo De Jong e Rindi (2009), existem apenas em mercados quote-driven, pois nesses mercados os formadores têm a obrigação de fornecer preços de compra e preços de venda ininterruptamente ao mercado. Os custos relacionados à assimetria de informação e de transação ou de processamento de ordens existem em qualquer mercado. O mercado de ações da B3 é order-driven e nesse caso não se identifica o custo de estoque.
+
+Nos mercados quote-driven, também conhecidos como mercados de dealer, um intermediário (dealer) participa de todas as transações. Nesse tipo de mercado, os traders negociam diretamente com o dealer, que fornece cotações dos preços de compra e venda, assumindo o lado oposto de cada transação e, assim, proporcionando liquidez ao mercado. Esses mercados são comuns no comércio de moedas estrangeiras e títulos no mercado de balcão (OTC).
+
+Por outro lado, nos mercados order-driven, os compradores e vendedores negociam diretamente entre si, sem a intervenção de um dealer, utilizando um conjunto de regras de negociação estabelecidas. Essas regras incluem precedência de ordens, que determina como as ordens de compra e venda são casadas, e regras de precificação de transações. Os mercados order-driven são prevalentes em bolsas de futuros, ações e opções, bem como em redes eletrônicas de comunicação para negociação de títulos e moedas. Em suma, a principal diferença reside no papel do intermediário: enquanto nos mercados quote-driven o dealer facilita todas as transações fornecendo cotações, nos mercados order-driven, as transações são realizadas diretamente entre os traders com base em regras de mercado (Peat, 2009).
+
+No contexto do mercado de ações no Brasil, a B3 adota um modelo de mercado order-driven, mas algumas ações contam com a presença de formadores de mercado. Os formadores de mercado, ou market makers, são contratados pelas empresas para aumentar a liquidez de suas ações. A liquidez refere-se à facilidade com que um ativo pode ser comprado ou vendido sem causar uma mudança significativa em seu preço (Harris, 2003). A presença de um formador de mercado pode reduzir o spread de compra e venda, o que diminui os custos de transação para os investidores e aumenta a atratividade da ação. Empresas contratam formadores de mercado para aumentar a liquidez de suas ações, melhorar a precificação e atrair mais investidores, especialmente em períodos de baixa negociação ou para novos papéis que estão sendo introduzidos no mercado.
+
+A assimetria de informação, por sua vez, ocorre quando diferentes participantes do mercado têm diferentes níveis de acesso à informação relevante para a precificação dos ativos. Nos mercados order-driven, a assimetria de informação pode ser mitigada pela transparência do livro de ordens e pelas regras claras de negociação. No entanto, a assimetria ainda pode existir, especialmente em mercados menos líquidos ou em ações com menor cobertura de analistas. Em mercados quote-driven, a assimetria de informação pode ser mais pronunciada, pois os dealers podem ter acesso a informações privilegiadas que não estão disponíveis para todos os participantes do mercado.
+
+Além disso, os custos de transação referem-se aos custos associados à realização de uma transação econômica, que incluem os custos de negociação e de contratação (Demsetz, 1968). Esses custos incluem taxas pagas à bolsa, comissões de corretagem e custos relacionados ao tempo e esforço necessários para processar as ordens. Em mercados order-driven como a B3, esses custos podem ser reduzidos pela automação e eficiência das plataformas de negociação eletrônica, que facilitam a correspondência rápida e precisa das ordens de compra e venda.
+
+Em suma, a presença de formadores de mercado em ações na B3 visa principalmente aumentar a liquidez, reduzir o spread de compra e venda e melhorar a eficiência do mercado. Ao contratar formadores de mercado, as empresas buscam criar um ambiente de negociação mais ativo e atraente para os investidores, promovendo assim uma melhor precificação e maior volume de negociações. A compreensão dos diferentes custos associados ao spread de compra e venda, bem como das diferenças entre mercados quote-driven e order-driven, é essencial para avaliar o impacto da microestrutura de mercado na formação de preços dos ativos financeiros.
+
+## Modelos de estimação de Spread bid-ask
+
+
+\newpage
+
+# Introdução ao trabalho empírico
+
+Este trabalho empírico se baseia na Revisão Narrativa de Literatura (RNL) realizada anteriormente, que identificou as metodologias de baixa frequência mais utilizadas para a estimativa do spread bid-ask. A RNL permitiu selecionar três metodologias amplamente reconhecidas: Corwin e Schultz (2012), Abdi e Ranaldo (2017) e EDGE (Ardia, Guidotti e Kroencke, 2024). Essas metodologias foram escolhidas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer insights em diferentes contextos de mercado.
+
+A estrutura do trabalho empírico é composta por várias seções, começando com a introdução ao tema e o contexto do mercado financeiro brasileiro. Em seguida, a seção de Relevância e Justificativa discute a importância de medir o spread bid-ask para investidores, reguladores e acadêmicos, destacando como este estudo preenche lacunas na literatura existente. A seção de Objetivos define as metas específicas do estudo, incluindo a comparação das metodologias selecionadas e a análise do comportamento do spread bid-ask em diferentes períodos.
+
+A metodologia detalha os procedimentos adotados para a coleta e análise dos dados, bem como a aplicação das metodologias selecionadas. A amostra foi composta por ações listadas na B3, utilizando critérios rigorosos de seleção para garantir a representatividade e a qualidade dos dados. Os modelos econométricos foram aplicados para estimar o spread bid-ask, e os resultados foram comparados com os valores de referência fornecidos pela Bloomberg. A análise incluiu a avaliação do impacto da liquidez sobre o desempenho dos estimadores, proporcionando uma visão abrangente sobre a eficiência e a liquidez do mercado de ações brasileiro.
+
+## Contexto
+
+O spread bid-ask é uma medida fundamental na microestrutura de mercado, representando a diferença entre os preços de compra (bid) e venda (ask) de um ativo. Este spread reflete os custos de transação e a liquidez do mercado, sendo influenciado por fatores como a volatilidade do ativo, a frequência de negociação e a assimetria de informações entre os participantes do mercado. A análise do spread bid-ask é crucial para entender a eficiência do mercado e os custos enfrentados pelos investidores.
+
+No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros instrumentos financeiros. A bolsa tem se destacado por sua infraestrutura tecnológica avançada e por iniciativas voltadas à inclusão financeira e ao aumento da liquidez do mercado. No entanto, os mercados emergentes, como o brasileiro, ainda enfrentam desafios significativos, incluindo menor liquidez e maior volatilidade em comparação com mercados desenvolvidos.
+
+A literatura sobre bid-ask spread tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas metodologias a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas metodologias se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
+
+### Relevância e justificativa
+
+Medir o bid-ask spread é de extrema relevância para diversos stakeholders no mercado financeiro. Corwin (2012) destaca que, para os investidores, o spread bid-ask é um indicador direto dos custos de transação e da liquidez do mercado, influenciando decisões de compra e venda de ativos. Reguladores utilizam essa medida para monitorar a eficiência do mercado e identificar possíveis práticas de manipulação de preços. Acadêmicos, por sua vez, empregam o bid-ask spread como uma variável chave em estudos sobre microestrutura de mercado, eficiência de preços e assimetria informacional.
+
+Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do bid-ask spread aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
+
+A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do bid-ask spread. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
+
+# Objetivos
+
+Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral analisar e comparar metodologias de estimativa do spread bid-ask com os valores de referência fornecidos pela Bloomberg, buscando compreender quais métodos são mais adequados ao mercado de ações brasileiro. Adicionalmente, o trabalho investiga as dinâmicas do spread bid-ask antes, durante e após o período da pandemia de COVID-19, explorando possíveis implicações para a eficiência e liquidez do mercado.
+
+Os objetivos específicos, usados para responder às perguntas de pesquisa serão:
+
+1.  Avaliar qual metodologia de estimativa de spread bid-ask se aproxima mais dos valores de referência fornecidos pela Bloomberg.
+2.  Analisar o comportamento do spread bid-ask em três períodos distintos: pré-COVID-19, durante a pandemia e no período pós-COVID-19.
+3.  Comparar as vantagens e limitações de estimadores consagrados na literatura, como o EDGE, de Ardia, Guidotti e Kroencke (2024), o Corwin e Schultz (2012) e o Abdi e Ranaldo (2017) em cenários de diferentes frequências de negociação no mercado brasileiro.
+
+\newpage
+
+# Metodologia
+
+A metodologia deste estudo foi desenvolvida para permitir uma análise rigorosa e comparativa das diferentes metodologias de estimativa do spread bid-ask no mercado de ações brasileiro. A seguir, são detalhadas as etapas e procedimentos adotados para a coleta e análise dos dados, bem como a aplicação das metodologias selecionadas.
+
+## Amostra
+
+A base de dados deste estudo foi composta a partir das informações de preços diários das ações listadas na B3, aplicando critérios rigorosos de seleção para garantir a representatividade e a qualidade dos dados utilizados. O critério principal para inclusão das ações na amostra foi o índice de liquidez, calculado conforme a metodologia descrita por Andrade et al. (2009). Foram consideradas apenas as ações com índice de liquidez superior a 0,1, calculado com base em uma janela de seis meses de dados, assegurando a representatividade de ativos com maior frequência de negociação.
+
+A amostra final é composta por 138 ações, distribuídas entre os diferentes segmentos de governança corporativa da B3. Entre elas, 96 pertencem ao Novo Mercado, 16 ao Nível 2, 18 ao Nível 1 e 4 ao segmento Tradicional. Essa segmentação reflete distintos níveis de práticas de governança corporativa, permitindo uma análise abrangente sobre como essas características impactam os spreads bid-ask e a liquidez dos ativos.
+
+A definição da amostra seguiu abordagens amplamente utilizadas na literatura, como a adotada por Andrade et al. (2009), que empregaram critérios de liquidez para selecionar empresas listadas. Empresas do setor financeiro foram excluídas devido às particularidades de suas demonstrações contábeis, que poderiam introduzir vieses na análise. Além disso, foram descartadas companhias com dados incompletos ou inconsistentes, assegurando que a amostra final apresentasse informações confiáveis para a investigação empírica.
+
+O processo de filtragem das ações visou garantir a robustez dos dados utilizados, selecionando ativos que refletissem, de forma mais precisa, o valor de mercado real. A inclusão de ações com maior liquidez não apenas melhora a representatividade da amostra, mas também favorece a precisão das estimativas econométricas realizadas no estudo, reduzindo potenciais vieses causados por falta de negociação.
+
+## Modelos econométricos
+
+Este estudo aplicou três metodologias amplamente reconhecidas para a estimativa do spread bid-ask: CS, AR e EDGE utilizando dados obtidos diretamente da B3. Essas abordagens foram selecionadas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer insights em diferentes contextos de mercado.
+
+O estimador de spread bid-ask desenvolvido por Corwin e Schultz (2012) utiliza os preços diários de máxima e mínima das ações para calcular o spread de forma simples e eficiente. A metodologia parte de duas premissas principais. Primeiramente, assume-se que os preços máximos tendem a ser resultados de ordens de compra, enquanto os mínimos são influenciados por ordens de venda. Dessa forma, a relação entre os preços de máxima e mínima reflete tanto a volatilidade fundamental do ativo quanto os custos associados ao spread bid-ask. Em segundo lugar, considera-se que a componente de volatilidade aumenta proporcionalmente com o intervalo de negociação, enquanto a parte do spread permanece constante.
+
+Matematicamente, o estimador é definido pela seguinte expressão:
+
+$S = \frac{2 (e^\alpha - 1)}{1 + e^\alpha},$
+
+onde $S$ representa o spread bid-ask estimado e $e$ é a base do logaritmo natural. O parâmetro $\alpha$ é calculado por:
+
+$\alpha = \frac{\sqrt{2\beta} - \sqrt{\beta}}{3 - 2\sqrt{2}} - \sqrt{\frac{\gamma}{3 - 2\sqrt{2}}},$
+
+sendo $\beta$ e $\gamma$ definidos a partir dos logaritmos naturais das razões entre os preços máximos, H, e mínimos, L, observados:
+
+$\beta = E\left[\sum_{j=0}^{1} \left( \ln \frac{H_{t+j}}{L_{t+j}} \right)^2 \right],$
+
+$\gamma = E\left[ \left( \ln \frac{H_{t,t+1}}{L_{t,t+1}} \right)^2 \right],$
+
+onde $H_{t,t+1} = \max(H_t, H_{t+1})$ e $L_{t,t+1} = \min(L_t, L_{t+1})$. Nesse contexto, $\beta$ captura as variações diárias entre os preços máximos e mínimos, enquanto $\gamma$ reflete a dinâmica entre dois dias consecutivos. Essas variáveis permitem separar a volatilidade fundamental do ativo da componente relacionada ao spread bid-ask.
+
+A partir dessas definições, torna-se evidente que o método permite isolar o impacto do spread bid-ask dos movimentos puramente voláteis do preço. A implementação do estimador é direta, dispensando iterações complexas, o que facilita sua aplicação prática em grandes conjuntos de dados. Corwin e Schultz (2012) validaram o estimador por meio de simulações que replicaram condições realistas de mercado, demonstrando que a correlação entre os valores estimados pelo método e os spreads reais é elevada, em torno de 0,9. Em comparação com o estimador de covariância de Roll (1984), o desvio padrão das estimativas de Corwin e Schultz é cerca de metade, indicando maior estabilidade nos resultados.
+
+O método foi aplicado a ações de 11 países, incluindo o Brasil, evidenciando sua eficácia em medir os custos de transação em diferentes contextos de liquidez e volatilidade. Essa metodologia tem sido amplamente utilizada em estudos sobre microestrutura de mercado. Por exemplo, foi empregada para analisar a relação entre a qualidade das informações financeiras e a assimetria informacional, com resultados que destacaram sua eficiência em comparação a outros indicadores. Embora algumas pesquisas apontem limitações no uso do método como medida de liquidez para prever retornos, ele continua sendo uma ferramenta confiável para estimar custos de transação e compreender a dinâmica dos mercados financeiros.
+
+Portanto, o estimador de Corwin e Schultz (2012) oferece uma solução prática e robusta para mensurar o spread bid-ask com base em dados diários, sendo amplamente adotado em estudos de microestrutura, especialmente em mercados onde dados intradiários são limitados. Sua simplicidade e eficácia tornam-no uma ferramenta valiosa para analisar a liquidez e a eficiência do mercado financeiro brasileiro.
+
+Já o estimador de Abdi e Ranaldo (2017) trouxe uma metodologia nova para o cálculo do spread, sendo desenvolvida para estimar o spread bid-ask utilizando preços diários de fechamento, máxima e mínima das ações. A abordagem se baseia na decomposição do spread em componentes de volatilidade e custos de transação, permitindo uma análise detalhada dos fatores que influenciam a formação de preços nos mercados financeiros. Esse estimador é fundamentado em três etapas principais. Primeiro, utiliza-se o preço médio entre a máxima e a mínima (mid-range) como um proxy para o preço eficiente, que é definido como $MR_t = \frac{H_t + L_t}{2}$, supondo que o spread bid-ask se cancela nesse cálculo. Em seguida, calcula-se a distância quadrática entre o preço de fechamento e o proxy de preço eficiente derivado da média das médias de dois dias consecutivos, com essa distância sendo representada como: $D_t = \left(C_t - MR_t\right)^2$. Por fim, essa distância é ajustada para remover a variância do preço eficiente, $\sigma^2_D,$ isolando assim o componente relacionado ao spread bid-ask. Essa abordagem, além de simplificar cálculos, não requer ajustes *ad hoc* para períodos sem negociação, como finais de semana e feriados, o que a torna menos suscetível a viéses comuns em outros modelos.
+
+No final, a fórmula do estimador é dada por:
+
+$S = 2\sqrt{\sigma^2_D},$
+
+onde $S$ é o spread bid-ask estimado, e $\sigma^2_D$ é a variância do termo $D_t$, ajustada com base nos preços de dois dias consecutivos. Essa formulação permite capturar de maneira mais precisa os custos de transação associados às negociações
+
+Adicionalmente, o modelo de Abdi e Ranaldo (2017) se destaca em cenários de baixa liquidez. Ao contrário do estimador de Corwin-Schultz (2012), que apresenta viés descendente em ativos menos líquidos, esse método AR foi dito como mais estável e robusto em condições de mercado desafiadoras, o tornando uma ferramenta valiosa para analisar a eficiência e a liquidez em mercados emergentes e em desenvolvimento, onde a disponibilidade de dados intradiários é limitada. A relevância desse estimador é evidente ao compará-lo com outros modelos, como o de Corwin-Schultz. Enquanto o estimador de Corwin-Schultz depende de uma estrutura não-linear para decompor a volatilidade do preço e o spread bid-ask, o modelo de Abdi e Ranaldo (2017) utiliza uma solução em forma fechada, simplificando o processo de estimação e reduzindo a necessidade de premissas adicionais, como a igualdade de chances de preços de alta e baixa serem iniciados por compradores ou vendedores.
+
+Além disso, o método é amplamente aplicável, tendo sido validado em Abdi e Ranaldo (2017) em uma extensa amostra de ações nos EUA desde 1926, demonstrando alto grau de correlação com spreads efetivos medidos por dados intradiários (TAQ). Isso confirma sua eficácia como uma ferramenta para mensurar custos de transação e liquidez em longos períodos históricos, contribuindo para a análise de risco de liquidez sistemática e de commonality em liquidez.
+
+O método EDGE, desenvolvido por Ardia, Guidotti e Kroencke (2024), surge como uma proposta robusta para estimar o spread bid-ask de maneira eficiente, utilizando preços diários de abertura, máxima, mínima e fechamento (OHLC). Este método aborda uma limitação crítica de estimadores anteriores, como os de Corwin e Schultz (2012) e Abdi e Ranaldo (2017): o viés introduzido pela suposição de preços observados continuamente, que não reflete a realidade de mercados com baixa frequência de negociações.
+
+O EDGE parte de três premissas centrais, compartilhadas com outros métodos: (1) os retornos fundamentais não são autocorrelacionados; (2) os retornos fundamentais são independentes das flutuações causadas pelo spread bid-ask; e (3) as flutuações do spread não possuem média e são não correlacionadas. No entanto, ele se diferencia ao relaxar a suposição de que preços são continuamente observados. Em mercados reais, a quantidade de negociações por intervalo de tempo é finita, o que resulta em um viés de subestimação dos spreads, especialmente em ativos com baixa liquidez. O EDGE corrige essa limitação introduzindo termos analíticos que ajustam o viés decorrente da observação discreta de preços.
+
+Matematicamente, o spread bid-ask estimado pelo EDGE é definido como:
+
+$S = f(O_t, H_t, L_t, C_t),$
+
+onde $S$ é o spread estimado, e a função $f$ combina as estatísticas derivadas dos preços OHLC. Em essência, o método utiliza a amplitude intradiária normalizada para capturar a dinâmica entre o preço eficiente e o spread bid-ask. A amplitude é calculada como:
+
+$A_t = \ln \frac{H_t}{L_t},$
+
+e o ajuste para a observação discreta de preços é dado por:
+
+$D_t = \ln \frac{C_t}{O_t},$
+
+onde $A_t$ reflete a volatilidade e $D_t$ corrige o viés causado pela não observação contínua dos preços. O spread estimado é então ajustado por um termo de correção baseado na variação observada em múltiplos dias consecutivos, representado como:
+
+$S = \alpha \cdot A_t + \beta \cdot D_t,$
+
+em que os coeficientes $\alpha$ e $\beta$ são calibrados para garantir que o estimador seja imparcial e apresente a menor variância possível. Esses coeficientes são derivados empiricamente, considerando simulações e validações em diferentes mercados.
+
+De acordo com Ardia, Guidotti e Kroencke (2024), uma das características mais inovadoras do EDGE é a combinação otimizada de estimadores derivados de diferentes combinações de preços (como abertura e fechamento, máxima e mínima). Isso é feito para minimizar a variância de estimação, resultando em um estimador eficiente que se destaca tanto em cenários de spreads baixos quanto elevados. Segundo o artigo, enquanto estimadores como o de Corwin e Schultz (2012) são mais precisos para spreads pequenos, e o de Abdi e Ranaldo (2017) apresenta menor viés para spreads grandes, o EDGE combina o melhor desses cenários, garantindo estimativas com menor variância e viés uniforme.
+
+Comparando com métodos anteriores, como o de Abdi e Ranaldo, o EDGE generaliza sua abordagem ao considerar informações adicionais de preços de abertura e fechamento. Enquanto o estimador de Abdi e Ranaldo utiliza médias de preços máximos, mínimos e de fechamento para isolar o componente de volatilidade do spread, o EDGE aproveita todas as informações de OHLC e introduz ajustes analíticos para corrigir observações discretas. Além disso, o EDGE não requer ajustes adicionais para períodos sem negociação, como finais de semana e feriados, assim como o estimador de Abdi e Ranaldo.
+
+Sendo assim, o EDGE é uma contribuição relevante para a literatura de microestrutura de mercado, oferecendo uma ferramenta confiável e eficiente para a estimação de custos de transação. Ele não apenas melhora a precisão das estimativas em relação a métodos tradicionais, mas também amplia sua aplicabilidade a diversos contextos de mercado, como períodos históricos e mercados emergentes.
+
+Os três estimadores discutidos – Corwin-Schultz (CS), Abdi-Ranaldo (AR) e EDGE – foram escolhidos para este estudo devido à sua relevância teórica, robustez metodológica e capacidade de oferecer insights em diferentes contextos de mercado. Além disso, suas características complementares permitem uma análise comparativa detalhada de suas performances no mercado brasileiro, que é classificado como emergente.
+
+A aplicação dos métodos será realizada em três períodos distintos: pré-pandemia, durante a pandemia e no pós-pandemia. O período pré-pandemia é caracterizado por uma maior estabilidade econômica e condições de mercado mais previsíveis, oferecendo uma base para avaliar o desempenho dos estimadores em um cenário mais controlado. Durante a pandemia, o mercado foi marcado por alta volatilidade e incertezas, o que representa um contexto de maior desafio para os estimadores, especialmente em ativos menos líquidos. Por fim, o período pós-pandemia reflete um mercado em processo de readaptação, com uma recuperação gradual da liquidez e uma nova estabilidade, permitindo verificar a consistência dos métodos em cenários intermediários.
+
+Com isso, este estudo busca avaliar como cada método se adapta às características específicas do mercado brasileiro e dos diferentes contextos temporais, contribuindo para a literatura de microestrutura ao explorar os pontos fortes e limitações de cada estimador em mercados emergentes e desafiadores.
+
+## Cálculo do spread bid-ask
+
+As três metodologias selecionadas foram: EDGE (Ardia, Guidotti e Kroencke, 2024), CS (Corwin e Schultz, 2012) e AR (Abdi e Ranaldo, 2017). O uso de uma janela móvel de 21 dias, representada pelo parâmetro *width* = 21, foi adotado para garantir consistência metodológica e facilitar a comparação com estudos anteriores, como os de Ardia, Guidotti e Kroencke (2024), que seguem o mesmo princípio. Essa configuração considera 21 dias como equivalente a aproximadamente um mês de negociações, com base na prática padrão em mercados financeiros, onde a média de dias úteis de negociação em um mês é de cerca de 21.
+
+Além disso, no estudo de Ardia, Guidotti e Kroencke (2024), a aplicação do estimador é baseada em períodos de 21 dias úteis para representar um mês de negociações. Essa abordagem é consistente com os trabalhos de Corwin e Schultz (2012) e Abdi e Ranaldo (2017), que também utilizam essa mesma configuração temporal em suas análises e simulações. O objetivo é criar uma unidade temporal padronizada que permita avaliar variações no spread bid-ask de maneira comparável ao longo de diferentes períodos e contextos de negociação.
+
+Essa escolha também facilita a análise do impacto de diferentes frequências de negociação, uma vez que uma janela de 21 dias captura tanto oscilações diárias quanto tendências mais amplas em cenários de alta e baixa liquidez. Portanto, a adoção desse parâmetro não só mantém a consistência com a literatura, mas também reflete práticas amplamente aceitas no campo de microestrutura de mercado, garantindo a robustez e a validade dos resultados obtidos no contexto do mercado brasileiro.
+
+O cálculo foi realizado sobre as séries de preços de abertura, máxima, mínima, fechamento (OHLC) e volumes diários obtidos diretamente da B3. As metodologias foram aplicadas sem modificações adicionais, seguindo rigorosamente os algoritmos descritos nos trabalhos originais, de forma a garantir a comparabilidade com os benchmarks teóricos.
+
+## Comparação com o valor de referência e análise de frequência de negociação
+
+As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi essencial para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro.
+
+Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
+
+Para aprofundar a análise, as ações foram classificadas com base no volume médio diário de negociação, visando compreender o impacto da liquidez sobre o desempenho dos estimadores. Essa classificação utilizou os quantis dos volumes médios para segmentar os ativos em dois grupos principais:
+
+30% com maiores volumes: Representando ações altamente líquidas.
+
+30% com menores volumes: Representando ações com baixa liquidez.
+
+As estimativas de spread foram analisadas separadamente para cada grupo, permitindo observar como os estimadores se comportam em cenários de alta e baixa liquidez. Essa abordagem revelou que o EDGE apresentou maior robustez em ativos com baixa liquidez, graças à sua capacidade de corrigir vieses associados à frequência reduzida de negociações. Em contrapartida, o CS mostrou limitações significativas, com viés descendente em ativos de menor volume, enquanto o AR apresentou resultados intermediários entre os dois métodos.
+
+Essa análise detalhada forneceu insights sobre a adequação das metodologias a diferentes perfis de ativos no mercado brasileiro, reforçando a importância de considerar a liquidez como um fator determinante na escolha de estimadores para spread bid-ask. Além disso, contribuiu para a identificação de metodologias mais robustas para contextos de baixa liquidez, uma característica comum em mercados emergentes.
+
+\newpage
+
+# Resultados preliminares
+
+Ardia, Guidotti e Kroencke (2024) discutem que o EDGE é superior em resultados, principalmente quando se trata de períodos de alta volatilidade...
+
+## Análise dos estimadores
+
+<!-- Montando a tabela de estatísticas -->
+
+```{r}
+# Atribuir grupos de volumes aos dados de spreads
+company_spreads_df <- company_spreads_df %>%
+  mutate(Group = case_when(
+    Company_Code %in% high_volume ~ "Ativos mais líquidos",
+    Company_Code %in% low_volume ~ "Ativos menos líquidos",
+    TRUE ~ "Todos"
+  ))
+
+# Calcular as estatísticas para cada grupo e método com 4 casas decimais
+stats_table <- company_spreads_df %>%
+  group_by(Group) %>%
+  summarise(
+    Media_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
+    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
+    Maximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
+    Minimo_EDGE = min(Spread_EDGE, na.rm = TRUE),
+    Media_CS = mean(Spread_CS, na.rm = TRUE),
+    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
+    Mediana_CS = median(Spread_CS, na.rm = TRUE),
+    Maximo_CS = max(Spread_CS, na.rm = TRUE),
+    Minimo_CS = min(Spread_CS, na.rm = TRUE),
+    Media_AR = mean(Spread_AR, na.rm = TRUE),
+    DesvPad_AR = sd(Spread_AR, na.rm = TRUE),
+    Mediana_AR = median(Spread_AR, na.rm = TRUE),
+    Maximo_AR = max(Spread_AR, na.rm = TRUE),
+    Minimo_AR = min(Spread_AR, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Atribuir os grupos na ordem desejada
+stats_table$Group <- factor(stats_table$Group,
+                            levels = c("Ativos mais líquidos",
+                                       "Ativos menos líquidos",
+                                       "Todos"))
+
+stats_table <- stats_table %>% arrange(Group)
+
+# Dividir a stats_table em duas tabelas separadas
+stats_table_EDGE <- stats_table %>%
+  select(Group, Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE)
+
+stats_table_CS <- stats_table %>%
+  select(Group, Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS)
+
+stats_table_AR <- stats_table %>%
+  select(Group, Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR)
+
+# Criar a tabela para EDGE
+tabela_EDGE <- stats_table_EDGE %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "EDGE",
+    columns = c("Media_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Maximo_EDGE", "Minimo_EDGE")
+  ) %>%
+  cols_label(
+    Media_EDGE = "Média",
+    DesvPad_EDGE = "DesvPad",
+    Mediana_EDGE = "Mediana",
+    Maximo_EDGE = "Máximo",
+    Minimo_EDGE = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE),
+    decimals = 6
+  )
+
+# Criar a tabela para CS
+tabela_CS <- stats_table_CS %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "CS",
+    columns = c("Media_CS", "DesvPad_CS", "Mediana_CS", "Maximo_CS", "Minimo_CS")
+  ) %>%
+  cols_label(
+    Media_CS = "Média",
+    DesvPad_CS = "DesvPad",
+    Mediana_CS = "Mediana",
+    Maximo_CS = "Máximo",
+    Minimo_CS = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS),
+    decimals = 6
+  )
+
+# Criar a tabela para AR
+tabela_AR <- stats_table_AR %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "AR",
+    columns = c("Media_AR", "DesvPad_AR", "Mediana_AR", "Maximo_AR", "Minimo_AR")
+  ) %>%
+  cols_label(
+    Media_AR = "Média",
+    DesvPad_AR = "DesvPad",
+    Mediana_AR = "Mediana",
+    Maximo_AR = "Máximo",
+    Minimo_AR = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR),
+    decimals = 6
+  )
+
+```
+
+::: {#tbl-estatsedge}
+```{r}
+#| tbl-pos: H
+tabela_EDGE
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método EDGE
+:::
+
+::: {#tbl-estatscs}
+```{r}
+#| tbl-pos: H
+tabela_CS
+```
+
+<br>
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método CS
+:::
+
+::: {#tbl-estatsar}
+```{r}
+#| tbl-pos: H
+tabela_AR
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método AR
+:::
+
+Como visto na @tbl-estatsedge, com as estatística do EDGE, na @tbl-estatscs, com as estatísticas do CS, e na @tbl-estatsar, com as estatísticas do AR, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de $2.2 \times 10^{-5}$ para ativos mais líquidos e $1,6 \times 10^{-5}$ para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia, Guidotti e Kroencke (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+
+Segundo Ardia, Guidotti e Kroencke (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
+
+Por outro lado, o EDGE mantém estimativas não viesadas independentemente do número de negociações, graças a um termo de correção analítico que considera a negociação infrequente. Nossos resultados corroboram essa evidência, mostrando que o EDGE não retorna valores nulos mesmo em ativos com baixa frequência de negociação, ao contrário do CS. Dessa forma, o EDGE se apresenta como uma metodologia mais robusta e apropriada para estimar o spread bid-ask em mercados com ativos menos líquidos.
+
+Ao incluir o estimador de Abdi e Ranaldo (2017) (AR) na análise, conforme apresentado na tabela @tbl-estatsar, observa-se que o AR também fornece resultados significativos na estimativa do spread bid-ask no mercado brasileiro. O estimador AR exibiu valores mínimos de spread bid-ask de $0,0$ para ativos mais líquidos e $9,2 \times 10^{-5}$ para ativos menos líquidos. Embora apresente valores mínimos iguais a zero em alguns casos, o AR tende a estimar spreads maiores em comparação com o CS e o EDGE.
+
+Os resultados mostram que o estimador AR possui médias de spread bid-ask de $0,011013$ para ativos mais líquidos e $0,012382$ para ativos menos líquidos, superiores às médias observadas para o EDGE ($0,008308$ e $0,008709$, respectivamente) e significativamente maiores que as do CS ($0,004102$ e $0,004512$). Esse comportamento sugere que o AR captura de maneira mais abrangente os custos de transação, especialmente em mercados com menor liquidez.
+
+Abdi e Ranaldo (2017) destacam que seu estimador é particularmente robusto em condições de baixa liquidez, pois utiliza preços de fechamento, máxima e mínima para estimar o spread bid-ask, sem dependência excessiva da frequência de negociação. Essa característica é essencial no contexto do mercado brasileiro, onde muitos ativos apresentam negociações infrequentes.
+
+Comparando os três estimadores, nota-se que o CS apresenta limitações significativas ao estimar spreads em ativos menos líquidos, frequentemente retornando valores nulos devido à suposição de negociação contínua. O EDGE, ao introduzir termos de correção para a observação discreta de preços, mantém estimativas não viesadas mesmo em ambientes de baixa liquidez. O AR, por sua vez, além de ser robusto em condições de baixa frequência de negociação, tende a estimar spreads mais elevados, possivelmente refletindo de forma mais acurada os custos enfrentados pelos investidores em mercados emergentes.
+
+Esses achados enfatizam a importância de selecionar metodologias adequadas ao perfil de liquidez dos ativos analisados. Enquanto o CS pode ser apropriado para mercados altamente líquidos, o EDGE e o AR demonstram vantagens claras em contextos de menor liquidez, como seria o caso do mercado brasileiro. O fato de o AR estimar spreads maiores pode fornecer insights adicionais sobre a presença de custos de transação elevados e assimetrias informacionais que não são capturadas pelos outros estimadores.
+
+## Análise de período de volatilidade
+
+```{r}
+# Filtrar company_spreads_df para incluir apenas o ano de 2020
+company_spreads_df_2020 <- company_spreads_df %>%
+  filter(year(Date) == 2020)
+
+# Calcular as estatísticas para cada grupo e método com 4 casas decimais
+stats_table_2020 <- company_spreads_df_2020 %>%
+  group_by(Group) %>%
+  summarise(
+    Media_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
+    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
+    Maximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
+    Minimo_EDGE = min(Spread_EDGE, na.rm = TRUE),
+    Media_CS = mean(Spread_CS, na.rm = TRUE),
+    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
+    Mediana_CS = median(Spread_CS, na.rm = TRUE),
+    Maximo_CS = max(Spread_CS, na.rm = TRUE),
+    Minimo_CS = min(Spread_CS, na.rm = TRUE),
+    Media_AR = mean(Spread_AR, na.rm = TRUE),
+    DesvPad_AR = sd(Spread_AR, na.rm = TRUE),
+    Mediana_AR = median(Spread_AR, na.rm = TRUE),
+    Maximo_AR = max(Spread_AR, na.rm = TRUE),
+    Minimo_AR = min(Spread_AR, na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+# Atribuir os grupos na ordem desejada
+stats_table_2020$Group <- factor(stats_table_2020$Group,
+                            levels = c("Ativos mais líquidos",
+                                       "Ativos menos líquidos",
+                                       "Todos"))
+
+stats_table_2020 <- stats_table_2020 %>% arrange(Group)
+
+# Dividir a stats_table_2020 em duas tabelas separadas
+stats_table_EDGE_2020 <- stats_table_2020 %>%
+  select(Group, Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE)
+
+stats_table_CS_2020 <- stats_table_2020 %>%
+  select(Group, Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS)
+
+stats_table_AR_2020 <- stats_table_2020 %>%
+  select(Group, Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR)
+
+# Criar a tabela para EDGE
+tabela_EDGE_2020 <- stats_table_EDGE_2020 %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "EDGE",
+    columns = c("Media_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Maximo_EDGE", "Minimo_EDGE")
+  ) %>%
+  cols_label(
+    Media_EDGE = "Média",
+    DesvPad_EDGE = "DesvPad",
+    Mediana_EDGE = "Mediana",
+    Maximo_EDGE = "Máximo",
+    Minimo_EDGE = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE),
+    decimals = 6
+  )
+
+# Criar a tabela para CS
+tabela_CS_2020 <- stats_table_CS_2020 %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "CS",
+    columns = c("Media_CS", "DesvPad_CS", "Mediana_CS", "Maximo_CS", "Minimo_CS")
+  ) %>%
+  cols_label(
+    Media_CS = "Média",
+    DesvPad_CS = "DesvPad",
+    Mediana_CS = "Mediana",
+    Maximo_CS = "Máximo",
+    Minimo_CS = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS),
+    decimals = 6
+  )
+
+# Criar a tabela para AR
+tabela_AR_2020 <- stats_table_AR_2020 %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "AR",
+    columns = c("Media_AR", "DesvPad_AR", "Mediana_AR", "Maximo_AR", "Minimo_AR")
+  ) %>%
+  cols_label(
+    Media_AR = "Média",
+    DesvPad_AR = "DesvPad",
+    Mediana_AR = "Mediana",
+    Maximo_AR = "Máximo",
+    Minimo_AR = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR),
+    decimals = 6
+  )
+
+```
+
+Ao comparar os resultados obtidos para todo o período de análise, de 2017 a 2023, com os resultados específicos do ano de 2020, marcado por alta volatilidade devido à pandemia de COVID-19, observamos certas variações nos spreads bid-ask estimados pelas três metodologias: CS, EDGE e AR.
+
+Em 2020, todos os estimadores registraram um aumento significativo nas médias dos spreads bid-ask em comparação com o período total. Esse aumento é consistente com o contexto de alta volatilidade e incerteza do mercado durante a pandemia.
+
+Os dados na @tbl-estatscs20 mostram que o estimador CS apresentou valores médios de spread bid-ask menores em relação aos estimadores EDGE e AR, tanto no período total quanto em 2020. Contudo, durante o ano de 2020, o CS registrou um aumento na média do spread bid-ask de aproximadamente 31% para ativos mais líquidos, de 0,004102 para 0,005204 e 23% para ativos menos líquidos, de 0,004512 para 0,005569.
+
+Já o estimador EDGE, na @tbl-estatsedge20, apresentou um aumento mais acentuado nas médias dos spreads bid-ask em 2020. Para ativos mais líquidos, a média passou de 0,008308 no período total para 0,011808 em 2020, um aumento de cerca de 42%. Para ativos menos líquidos, o aumento foi de aproximadamente 43%, de 0,008709 para 0,012413.
+
+O estimador AR, na @tbl-estatsar20, registrou os maiores valores médios de spread bid-ask em ambos os períodos analisados. Em 2020, a média para ativos mais líquidos aumentou em cerca de 40%, de 0,011013 para 0,015371, enquanto para ativos menos líquidos, o aumento foi de aproximadamente 36%, de 0,012382 para 0,016809.
+
+Esses resultados podem indicar uma maior sensibilidade dos estimadores EDGE e AR às condições de volatilidade do mercado, capturando de forma mais pronunciada o aumento nos custos de transação durante períodos de alta volatilidade.
+
+A análise evidencia que, em períodos de alta volatilidade, como o ano de 2020, os estimadores EDGE e AR tendem a fornecer estimativas de spread bid-ask superiores ao estimador CS. Isso pode sugerir que EDGE e AR capturem de maneira mais eficaz o aumento dos custos de transação e a diminuição da liquidez que tipicamente ocorrem em mercados voláteis.
+
+O estimador CS, por sua vez, embora tenha registrado aumentos nos spreads em 2020, ainda apresenta valores consideravelmente menores, o que pode indicar uma limitação em sua capacidade de refletir plenamente as condições de mercado adversas. Essa limitação pode ser atribuída à suposição implícita no modelo CS de negociação contínua e alta liquidez, que não se sustenta em períodos de turbulência do mercado.
+
+Os estimadores EDGE e AR demonstraram maior robustez em condições de baixa liquidez e alta volatilidade. O EDGE, com seu termo de correção analítico para negociação infrequente, consegue manter estimativas não viesadas mesmo quando a frequência de negociações diminui. O AR também se mostrou eficaz nesse contexto, estimando spreads maiores que refletem os aumentos nos custos de transação enfrentados pelos investidores.
+
+::: {#tbl-estatsedge20}
+```{r}
+tabela_EDGE_2020
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método EDGE para o ano de 2020
+:::
+
+::: {#tbl-estatscs20}
+```{r}
+tabela_CS_2020
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método CS para o ano de 2020
+:::
+
+::: {#tbl-estatsar20}
+```{r}
+tabela_AR_2020
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método AR para o ano de 2020
+:::
+
+\newpage
+
+# Limitações e próximos passos
+
+Embora este estudo tenha aplicado metodologias consolidadas internacionalmente para estimar o spread bid-ask no mercado de ações brasileiro, é importante reconhecer que a replicação dessas técnicas pode não capturar integralmente as particularidades do mercado nacional. O mercado brasileiro possui características únicas em termos de estrutura de negociação, liquidez, regulação e comportamento dos investidores, que podem influenciar a eficácia e a precisão dos estimadores utilizados.
+
+Um dos aspectos limitadores é que os modelos desenvolvidos por Corwin e Schultz (2012) e por Abdi e Ranaldo (2017) foram originalmente calibrados e testados em mercados desenvolvidos, como o norte-americano e o europeu, respectivamente. Essas economias apresentam maior liquidez, volumes de negociação mais elevados e uma estrutura de mercado distinta daquela observada no Brasil. Consequentemente, os pressupostos subjacentes a esses modelos, como a hipótese de negociação contínua ou a homogeneidade dos participantes do mercado, podem não se aplicar da mesma forma no contexto brasileiro, onde a liquidez é frequentemente concentrada em um número menor de ativos e existem períodos de baixa atividade.
+
+Adicionalmente, os estimadores baseados em dados de baixa frequência, como os utilizados neste trabalho, podem ser sensíveis a eventos específicos do mercado brasileiro, tais como intervenções regulatórias, volatilidade cambial e impacto de investidores institucionais domésticos. Essas peculiaridades podem introduzir vieses nas estimativas do spread bid-ask, comprometendo a acurácia dos resultados e a validade das conclusões. Por exemplo, a presença de negociações infrequentes ou gaps nos preços pode afetar a performance dos estimadores que assumem certa regularidade nas transações.
+
+No que se refere aos trabalhos de Abdi e Ranaldo (2017) e de Ardia, Guidotti e Kroencke (2024), apesar de apresentarem metodologias robustas para a estimativa do spread bid-ask, suas abordagens podem não considerar fatores específicos presentes no mercado brasileiro. Questões como a estrutura de formação de preços na B3, a concentração de liquidez em determinados horários do pregão e a influência de notícias locais podem impactar a dinâmica dos spreads de maneira diferente do que ocorre em mercados estrangeiros. Além disso, possíveis restrições de acesso a dados granulares no Brasil podem limitar a aplicação direta dos métodos propostos nesses estudos.
+
+Quanto aos próximos passos incluem a implementação prática dos modelos de estimativa do bid-ask spread utilizando dados do mercado brasileiro. A análise comparativa dos métodos será refinada, com a aplicação de técnicas adicionais de validação estatística. Além disso, o trabalho focará na elaboração do manuscrito final da dissertação, incorporando discussões aprofundadas sobre os resultados obtidos. Por fim, serão realizados ajustes necessários para atender aos requisitos da banca e incluir potenciais contribuições adicionais levantadas durante a qualificação.
+
+\newpage
+
+# Conclusão
+
+Este estudo investigou o impacto do spread bid-ask na formação de preços de ativos financeiros, com ênfase no mercado de ações brasileiro. A partir da Revisão de Literatura, foi possível identificar que o spread bid-ask é um componente essencial na microestrutura de mercado, influenciando diretamente a liquidez, os custos de transação e a eficiência dos mercados financeiros. Trabalhos clássicos, como os de Demsetz (1968) e Roll (1984), evidenciaram a relevância dos custos de transação e desenvolveram metodologias para a estimativa do spread. Estudos mais recentes, como os de Corwin e Schultz (2012), Abdi e Ranaldo (2017) e Ardia, Guidotti e Kroencke (2024), propuseram estimadores de baixa frequência que buscam aprimorar a precisão das estimativas em diferentes contextos de mercado.
+
+Nos resultados preliminares, aplicaram-se os estimadores de Corwin e Schultz (CS), Abdi e Ranaldo (AR) e o EDGE ao mercado de ações brasileiro, considerando um período abrangente de 2017 a 2023, bem como o ano específico de 2020, marcado por alta volatilidade decorrente da pandemia de COVID-19. As análises revelaram que o estimador CS tende a subestimar o spread bid-ask, especialmente em ativos com menor liquidez, muitas vezes retornando valores nulos devido à suposição de negociação contínua que não se sustenta em mercados com baixa frequência de transações. Em contrapartida, os estimadores EDGE e AR demonstraram maior robustez, capturando de forma mais eficaz os custos de transação e refletindo adequadamente as condições de volatilidade e liquidez do mercado brasileiro.
+
+Os dados mostraram que, durante o ano de 2020, houve um aumento significativo nos spreads bid-ask estimados por todos os métodos, evidenciando o impacto da volatilidade extrema nos custos de transação e na liquidez do mercado. O estimador AR apresentou os maiores valores médios de spread bid-ask, sugerindo que este método pode ser mais sensível às condições de mercado adversas. O EDGE também se mostrou sensível, e ao mesmo tempo mantendo estimativas não viesadas graças ao termo de correção analítico que considera a negociação infrequente.
+
+A comparação entre os estimadores destacou a importância de selecionar metodologias adequadas ao perfil de liquidez dos ativos e às condições específicas do mercado. Enquanto o CS pode ser apropriado para mercados altamente líquidos e com negociação contínua, o EDGE e o AR emergem como ferramentas mais apropriadas para mercados emergentes ou em condições de baixa liquidez, como é o caso do mercado brasileiro. A capacidade destes estimadores de capturar aumentos nos spreads durante períodos de alta volatilidade é crucial para a compreensão da dinâmica do mercado e para a tomada de decisões informadas por parte dos investidores e reguladores.
+
+Como próximas etapas, pretende-se aprofundar a análise comparativa dos estimadores incorporando dados de alta frequência obtidos da Bloomberg. Essa integração permitirá validar e calibrar os estimadores de baixa frequência utilizados neste estudo, confrontando-os com valores de referência derivados de dados intradiários. A utilização de dados de alta frequência possibilitará uma avaliação mais precisa dos spreads efetivos, permitindo analisar a acurácia dos estimadores em diferentes horizontes temporais e condições de mercado. Além disso, esta abordagem contribuirá para a identificação de possíveis ajustes ou melhorias nos métodos existentes, adaptando-os ainda mais à realidade do mercado brasileiro.
+
+Em suma, este trabalho reforça a relevância do spread bid-ask como elemento fundamental na formação de preços de ativos financeiros e evidencia a necessidade de metodologias robustas para sua estimativa, especialmente em mercados emergentes. A análise dos estimadores CS, EDGE e AR contribui para a literatura de microestrutura ao destacar suas vantagens e limitações em diferentes contextos. A continuidade da pesquisa, com a incorporação de dados de alta frequência, permitirá um entendimento mais profundo da dinâmica dos spreads bid-ask, oferecendo insights valiosos para investidores, acadêmicos e formuladores de políticas econômicas.
+
+\newpage
+
+# Cronograma da Dissertação (Atualizado)
+
+```{r}
+# Instalar pacotes necessários, se ainda não tiver
+if (!requireNamespace("knitr", quietly = TRUE)) install.packages("knitr")
+
+# Criar uma matriz com os dados
+dados_cronograma <- matrix(
+  c("X", "X", "X", "", "", "", "", "", "", "", "", "", "",
+    "", "", "X", "X", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "X", "", "", "", "", "", "", "", "",
+    "", "", "", "", "X", "", "", "", "", "", "", "", "", # LINHA 4
+    "", "", "", "", "X", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "X", "X", "X", "", "", "", "", "",
+    "", "", "", "", "", "", "", "X", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "X", "", "", "", "", # LINHA 8
+    "", "", "", "", "", "", "", "", "X", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "X", "X", "X", "",
+    "", "", "", "", "", "", "", "", "", "", "", "", "X",
+    "", "", "", "", "", "", "", "", "", "", "", "", "X"),
+  nrow = 12, byrow = TRUE
+)
+
+# Definir os nomes das linhas e colunas
+rownames(dados_cronograma) <- c(
+  "Realização da Revisão Narrativa de Literatura",
+  "Redação do Projeto de pesquisa",
+  "Defesa do Projeto",
+  "Ajustes do Projeto com base nos comentários da banca",
+  "Coleta da base de dados",
+  "Aplicação da metodologia",
+  "Análise dos resultados",
+  "Defesa da qualificação",
+  "Ajustes da qualificação com base nos comentários da banca",
+  "Redação da dissertação",
+  "Defesa da dissertação",
+  "Ajustes da dissertação com base nos comentários da banca"
+)
+colnames(dados_cronograma) <- c("abr/24", "mai/24", "jun/24", "jul/24", "ago/24", "set/24", "out/24", "nov/24", "dez/24", "jan/25", "fev/25", "mar/25", "abr/25")
+
+# Exibir a tabela
+library(knitr)
+kable(dados_cronograma, format = "latex", booktabs = FALSE, linesep = "") %>%
+  kable_styling(
+    latex_options = c("scale_down", "hold_position"),
+    position = "center"
+  ) %>%
+  row_spec(c(1,2,3,4,5,6,7,8,9,10,11), hline_after = TRUE)  # Adiciona linhas horizontais após as linhas 2, 4 e 6
+```
+
+\newpage
+
+# Referências
+
+\setlength{\parindent}{0pt} ABDI, F.; RANALDO, A. A simple estimation of bid-ask spreads from daily close, high, and low prices. \textbf{The review of financial studies}, v. 30, n. 12, p. 4437–4480, 2017.
+
+ARAÚJO, G. S.; BARBEDO, C. H. DA S.; VICENTE, J. V. M. The adverse selection cost component of the spread of Brazilian stocks. \textbf{Emerging markets review}, v. 21, p. 21–41, 2014.
+
+ARDIA, D.; GUIDOTTI, E.; KROENCKE, T. A. Efficient estimation of bid-ask spreads from open, high, low, and close prices. \textbf{SSRN Electronic Journal}, 2023.
+
+BURTON GORDON MALKIEL. \textbf{A random walk down Wall Street : the time- tested strategy for successful investing}. New York: W.W. Norton, 2007.
+
+CATTIVELLI, L.; PIRINO, D. A SHARP model of bid–ask spread forecasts. \textbf{International journal of forecasting}, v. 35, n. 4, p. 1211–1225, 2019.
+
+CHORDIA, T.; ROLL, R.; SUBRAHMANYAM, A. Commonality in liquidity. \textbf{Journal of financial economics}, v. 56, n. 1, p. 3–28, 2000.
+
+CONROY, R. M.; HARRIS, R. S.; BENET, B. A. The effects of stock splits on bid- ask spreads. \textbf{The journal of finance}, v. 45, n. 4, p. 1285–1295, 1990.
+
+CORREIA, L. F.; AMARAL, H. Determinantes da liquidez de mercado de ações negociadas. \textbf{Revista Brasileira de Economia}, v. 68, n. 1, p. 89-110, 2014.
+
+CORWIN, S. A.; SCHULTZ, P. A simple way to estimate bid-ask spreads from daily high and low prices. \textbf{The journal of finance}, v. 67, n. 2, p. 719–760, 2012.
+
+DE JONG, F.; RINDI, B. \textbf{The Microstructure of Financial Markets}. Cambridge: Cambridge University Press, 2009.
+
+DEMSETZ, H. The cost of transacting. \textbf{The Quarterly Journal of Economics}, v. 82, n. 1, p. 33, 1968.
+
+EASLEY, D.; O’HARA, M. Price, trade size, and information in securities markets. \textbf{Journal of financial economics}, v. 19, n. 1, p. 69–90, 1987.
+
+FAMA, E. F. The behavior of stock-market prices. \textbf{The journal of business}, v. 38, n. 1, p. 34, 1965.
+
+FAMA, E. F. Efficient capital markets: A review of theory and empirical work. \textbf{The journal of finance}, v. 25, n. 2, p. 383, 1970.
+
+FERREIRA, E. et al. Impacto assimétrico do sentimento do investidor na volatilidade do mercado acionário brasileiro. \textbf{Revista Brasileira de Gestão de Negócios}, v. 23, n. 2, p. 34-52, 2021.
+
+GEORGE, T. J.; KAUL, G.; NIMALENDRAN, M. Estimation of the Bid-ask Spreads and its Components: A New Approach. \textbf{Review of Financial Studies}, p. 623–656, 1991.
+
+GLOSTEN, L. R.; MILGROM, P. R. Bid, ask and transaction prices in a specialist market with heterogeneously informed traders. \textbf{Journal of financial economics}, v. 14, n. 1, p. 71–100, 1985.
+
+HARRIS, L. \textbf{Trading and Exchanges: Market Microstructure for Practitioners}. Oxford: Oxford University Press, 2003.
+
+HENDERSHOTT, T.; JONES, C. M.; MENKVELD, A. J. Does algorithmic trading improve liquidity? \textbf{The journal of finance}, v. 66, n. 1, p. 1–33, 2011.
+
+HOLDEN, C. W.; JACOBSEN, S. Liquidity measurement problems in fast, competitive markets: Expensive and cheap solutions: Liquidity measurement problems in fast, competitive markets. \textbf{The journal of finance}, v. 69, n. 4, p. 1747–1785, 2014.
+
+HUANG, R. D.; STOLL, H. R. The components of the bid-ask spread: A general approach. \textbf{The review of financial studies}, v. 10, n. 4, p. 995–1034, 1997.
+
+ICHIMURA, D.; VIDEIRA, R.; RIPAMONTI, A. Asymmetric information and daily stock prices in Brazil. \textbf{Estudios gerenciales}, p. 465–472, 2020.
+
+JENSEN, M. C. Some anomalous evidence regarding market efficiency. \textbf{Journal of Financial Economics}, v. 6, n. 2-3, p. 95–101, jun. 1978.
+
+OLIVEIRA, R. \textbf{Como o fator de iliquidez afeta o retorno das ações brasileiras: Estudo Empírico}. São Paulo: Insper, 2018.
+
+PEAT, M. Market data resources for researchers: The SIRCA data repository. \textbf{The Australian economic review}, v. 42, n. 4, p. 490–495, 2009.
+
+PINTO, P. \textbf{Análise dos principais componentes do bid-ask spread de opções sobre ações no mercado brasileiro}. São Paulo: Insper, 2018.
+
+RIPAMONTI, A. Corwin-Schultz bid-ask spread estimator in the Brazilian stock market. \textbf{Brazilian Administration Review}, v. 13, n. 1, p. 76–97, 2016.
+
+ROLL, R. A simple implicit measure of the effective bid-ask spread in an efficient market. \textbf{The journal of finance}, v. 39, n. 4, p. 1127, 1984.
+
+RYAN, Jeffrey; ULRICH, Joshua. Quantmod: Quantitative Financial Modelling Framework. Disponível em: https://github.com/joshuaulrich/quantmod. Acesso em: 24 nov. 2024.
+
+STOIKOV, S. The micro-price: a high-frequency estimator of future prices. \textbf{Quantitative finance}, v. 18, n. 12, p. 1959–1966, 2018.
+
+STOLL, H. R. Inferring the components of the bid-ask spread: Theory and empirical tests. \textbf{The journal of finance}, v. 44, n. 1, p. 115–134, 1989.
+
+TOLEDO, R. \textbf{Determinantes da remuneração do spread de certificados de recebíveis do agronegócio no mercado brasileiro}. São Paulo: Fundação Getúlio Vargas, 2016.
