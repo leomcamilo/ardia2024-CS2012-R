@@ -263,6 +263,33 @@ company_spreads_pos <- company_spreads_year %>%
 
 # Introdução
 
+## Contexto
+
+O spread bid-ask é uma medida fundamental na microestrutura de mercado, representando a diferença entre os preços de compra (bid) e venda (ask) de um ativo. Este spread reflete os custos de transação e a liquidez do mercado, sendo influenciado por fatores como a volatilidade do ativo, a frequência de negociação e a assimetria de informações entre os participantes do mercado. A análise do spread bid-ask é crucial para entender a eficiência do mercado e os custos enfrentados pelos investidores.
+
+No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros instrumentos financeiros. A bolsa tem se destacado por sua infraestrutura tecnológica avançada e por iniciativas voltadas à inclusão financeira e ao aumento da liquidez do mercado. No entanto, os mercados emergentes, como o brasileiro, ainda enfrentam desafios significativos, incluindo menor liquidez e maior volatilidade em comparação com mercados desenvolvidos.
+
+A literatura sobre bid-ask spread tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas metodologias a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas metodologias se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
+
+### Relevância e justificativa
+
+Medir o bid-ask spread é de extrema relevância para diversos stakeholders no mercado financeiro. Corwin (2012) destaca que, para os investidores, o spread bid-ask é um indicador direto dos custos de transação e da liquidez do mercado, influenciando decisões de compra e venda de ativos. Reguladores utilizam essa medida para monitorar a eficiência do mercado e identificar possíveis práticas de manipulação de preços. Acadêmicos, por sua vez, empregam o bid-ask spread como uma variável chave em estudos sobre microestrutura de mercado, eficiência de preços e assimetria informacional.
+
+Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do bid-ask spread aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
+
+A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do bid-ask spread. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
+
+# Objetivos
+
+Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral comparar, no mercado acionário brasileiro, estimativas de bid-ask spread obtidas pelas abordagens de Corwin & Schultz (2012), Abdi & Ranaldo (2017) e EDGE (Ardia, Guidotti & Kroencke, 2024), tendo como referência a cotação de spread divulgada pela Bloomberg.
+
+Os objetivos específicos, usados para responder às perguntas de pesquisa serão:
+
+1.  Avaliar qual metodologia de estimativa de spread bid-ask se aproxima mais dos valores de referência fornecidos pela Bloomberg durante o período selecionado.
+2.  Analisar o comportamento do spread bid-ask em três períodos distintos: pré-COVID-19, durante a pandemia e no período pós-COVID-19.
+3.  Comparar as vantagens e limitações de estimadores consagrados na literatura, como o EDGE, de Ardia, Guidotti e Kroencke (2024), o Corwin e Schultz (2012) e o Abdi e Ranaldo (2017) em cenários de diferentes frequências de negociação no mercado brasileiro.
+
+\newpage
 
 # Referencial teórico
 
@@ -307,44 +334,21 @@ Em suma, a presença de formadores de mercado em ações na B3 visa principalmen
 
 ## Modelos de estimação de Spread bid-ask
 
+A mensuração do spread bid-ask pode ser realizada por meio de dados de alta frequência, que registram de forma contínua as cotações e negociações ao longo do dia, ou através de dados de baixa frequência, os quais utilizam informações agregadas, como os preços de fechamento, máxima e mínima diários. Em contextos onde os dados de alta frequência são escassos ou de difícil acesso, os métodos de estimação baseados em dados agregados tornam-se fundamentais para a avaliação dos custos de transação e da liquidez dos ativos.
+
+Neste trabalho, serão utilizadas três metodologias de estimação de baixa frequência que vêm contribuindo de maneira inovadora para aprimorar a medição do spread bid-ask. A abordagem de Corwin e Schultz (2012) introduz uma forma simplificada de inferir o spread a partir das oscilações diárias, enquanto a proposta de Abdi e Ranaldo (2017) aprimora esse método ao reduzir incertezas inerentes às estimativas com dados diários. Por fim, a metodologia de Ardia, Guidotti e Kroencke (2024) integra informações adicionais, como o preço de abertura, proporcionando uma estimativa mais robusta e precisa.
+
+O modelo de Corwin e Schultz (2012) foi um dos primeiros a propor uma metodologia baseada apenas em preços diários de máxima e mínima para estimar o spread bid-ask. A ideia central do modelo é que o intervalo entre os preços mais altos e mais baixos de um dia reflete tanto a volatilidade do ativo quanto a diferença entre os preços de compra e venda. Assim, os autores derivam um estimador baseado na comparação entre a soma dos intervalos de dois dias consecutivos e o intervalo total de dois dias. Esse modelo trouxe uma abordagem simples e aplicável a mercados onde não há disponibilidade de dados de cotações intradiárias​
+
+Abdi e Ranaldo (2017) expandiram essa metodologia ao incluir informações do preço de fechamento, além dos preços de máxima e mínima diários. O modelo desenvolvido pelos autores tem como premissa a ideia de que o preço de fechamento contém informações adicionais sobre o comportamento do spread bid-ask. Utilizando uma formulação matemática que combina essas três variáveis, o estimador proposto por Abdi e Ranaldo mostrou-se mais preciso para ativos com menor liquidez, superando modelos anteriores em termos de correlação com medidas de spread obtidas a partir de dados de alta frequência​
+
+Mais recentemente, Ardia, Guidotti e Kroencke (2024) propuseram um modelo ainda mais abrangente, que incorpora informações dos preços de abertura, máxima, mínima e fechamento. Diferentemente dos modelos anteriores, que ignoram o preço de abertura, essa nova abordagem busca reduzir vieses na estimação ao aproveitar um conjunto mais completo de informações de preços. Além disso, os autores desenvolveram um estimador eficiente que minimiza a variância da estimativa, tornando-se uma alternativa superior para mensurar spreads em mercados com diferentes níveis de liquidez. O modelo de Ardia et al. (2024) representa um avanço na literatura ao abordar problemas de viés e eficiência estatística na estimação do spread bid-ask​
+
+Dessa forma, a evolução das metodologias de estimação do spread bid-ask reflete a necessidade de desenvolver modelos que equilibrem simplicidade e precisão, especialmente em mercados onde dados de alta frequência não estão disponíveis. A aplicação desses modelos ao mercado brasileiro permite uma avaliação mais detalhada da liquidez dos ativos e dos custos de transação, contribuindo para uma melhor compreensão das dinâmicas de precificação no mercado acionário nacional. Além disso, tais estimadores são fundamentais para o desenvolvimento de programas computacionais que viabilizem a estimação contínua do spread bid-ask, permitindo uma análise mais eficiente do comportamento do mercado.
 
 \newpage
 
-# Introdução ao trabalho empírico
 
-Este trabalho empírico se baseia na Revisão Narrativa de Literatura (RNL) realizada anteriormente, que identificou as metodologias de baixa frequência mais utilizadas para a estimativa do spread bid-ask. A RNL permitiu selecionar três metodologias amplamente reconhecidas: Corwin e Schultz (2012), Abdi e Ranaldo (2017) e EDGE (Ardia, Guidotti e Kroencke, 2024). Essas metodologias foram escolhidas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer insights em diferentes contextos de mercado.
-
-A estrutura do trabalho empírico é composta por várias seções, começando com a introdução ao tema e o contexto do mercado financeiro brasileiro. Em seguida, a seção de Relevância e Justificativa discute a importância de medir o spread bid-ask para investidores, reguladores e acadêmicos, destacando como este estudo preenche lacunas na literatura existente. A seção de Objetivos define as metas específicas do estudo, incluindo a comparação das metodologias selecionadas e a análise do comportamento do spread bid-ask em diferentes períodos.
-
-A metodologia detalha os procedimentos adotados para a coleta e análise dos dados, bem como a aplicação das metodologias selecionadas. A amostra foi composta por ações listadas na B3, utilizando critérios rigorosos de seleção para garantir a representatividade e a qualidade dos dados. Os modelos econométricos foram aplicados para estimar o spread bid-ask, e os resultados foram comparados com os valores de referência fornecidos pela Bloomberg. A análise incluiu a avaliação do impacto da liquidez sobre o desempenho dos estimadores, proporcionando uma visão abrangente sobre a eficiência e a liquidez do mercado de ações brasileiro.
-
-## Contexto
-
-O spread bid-ask é uma medida fundamental na microestrutura de mercado, representando a diferença entre os preços de compra (bid) e venda (ask) de um ativo. Este spread reflete os custos de transação e a liquidez do mercado, sendo influenciado por fatores como a volatilidade do ativo, a frequência de negociação e a assimetria de informações entre os participantes do mercado. A análise do spread bid-ask é crucial para entender a eficiência do mercado e os custos enfrentados pelos investidores.
-
-No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros instrumentos financeiros. A bolsa tem se destacado por sua infraestrutura tecnológica avançada e por iniciativas voltadas à inclusão financeira e ao aumento da liquidez do mercado. No entanto, os mercados emergentes, como o brasileiro, ainda enfrentam desafios significativos, incluindo menor liquidez e maior volatilidade em comparação com mercados desenvolvidos.
-
-A literatura sobre bid-ask spread tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas metodologias a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas metodologias se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
-
-### Relevância e justificativa
-
-Medir o bid-ask spread é de extrema relevância para diversos stakeholders no mercado financeiro. Corwin (2012) destaca que, para os investidores, o spread bid-ask é um indicador direto dos custos de transação e da liquidez do mercado, influenciando decisões de compra e venda de ativos. Reguladores utilizam essa medida para monitorar a eficiência do mercado e identificar possíveis práticas de manipulação de preços. Acadêmicos, por sua vez, empregam o bid-ask spread como uma variável chave em estudos sobre microestrutura de mercado, eficiência de preços e assimetria informacional.
-
-Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do bid-ask spread aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
-
-A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do bid-ask spread. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
-
-# Objetivos
-
-Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral analisar e comparar metodologias de estimativa do spread bid-ask com os valores de referência fornecidos pela Bloomberg, buscando compreender quais métodos são mais adequados ao mercado de ações brasileiro. Adicionalmente, o trabalho investiga as dinâmicas do spread bid-ask antes, durante e após o período da pandemia de COVID-19, explorando possíveis implicações para a eficiência e liquidez do mercado.
-
-Os objetivos específicos, usados para responder às perguntas de pesquisa serão:
-
-1.  Avaliar qual metodologia de estimativa de spread bid-ask se aproxima mais dos valores de referência fornecidos pela Bloomberg.
-2.  Analisar o comportamento do spread bid-ask em três períodos distintos: pré-COVID-19, durante a pandemia e no período pós-COVID-19.
-3.  Comparar as vantagens e limitações de estimadores consagrados na literatura, como o EDGE, de Ardia, Guidotti e Kroencke (2024), o Corwin e Schultz (2012) e o Abdi e Ranaldo (2017) em cenários de diferentes frequências de negociação no mercado brasileiro.
-
-\newpage
 
 # Metodologia
 
