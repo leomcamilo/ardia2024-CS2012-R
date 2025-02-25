@@ -283,16 +283,9 @@ A escolha do mercado brasileiro se justifica por suas características únicas c
 
 Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral comparar, no mercado acionário brasileiro, estimativas de bid-ask spread obtidas pelas abordagens de Corwin & Schultz (2012), Abdi & Ranaldo (2017) e EDGE (Ardia, Guidotti & Kroencke, 2024), tendo como referência a cotação de spread divulgada pela Bloomberg.
 
-Os objetivos específicos, usados para responder às perguntas de pesquisa serão:
-
-1.  Avaliar qual metodologia de estimativa de spread bid-ask se aproxima mais dos valores de referência fornecidos pela Bloomberg durante o período selecionado.
-2.  Analisar o comportamento do spread bid-ask em três períodos distintos: pré-COVID-19, durante a pandemia e no período pós-COVID-19.
-3.  Comparar as vantagens e limitações de estimadores consagrados na literatura, como o EDGE, de Ardia, Guidotti e Kroencke (2024), o Corwin e Schultz (2012) e o Abdi e Ranaldo (2017) em cenários de diferentes frequências de negociação no mercado brasileiro.
-
 \newpage
 
 # Referencial teórico
-
 
 ## Hipótese de eficiência de mercado
 
@@ -347,8 +340,6 @@ Mais recentemente, Ardia, Guidotti e Kroencke (2024) propuseram um modelo ainda 
 Dessa forma, a evolução das metodologias de estimação do spread bid-ask reflete a necessidade de desenvolver modelos que equilibrem simplicidade e precisão, especialmente em mercados onde dados de alta frequência não estão disponíveis. A aplicação desses modelos ao mercado brasileiro permite uma avaliação mais detalhada da liquidez dos ativos e dos custos de transação, contribuindo para uma melhor compreensão das dinâmicas de precificação no mercado acionário nacional. Além disso, tais estimadores são fundamentais para o desenvolvimento de programas computacionais que viabilizem a estimação contínua do spread bid-ask, permitindo uma análise mais eficiente do comportamento do mercado.
 
 \newpage
-
-
 
 # Metodologia
 
@@ -450,7 +441,7 @@ O cálculo foi realizado sobre as séries de preços de abertura, máxima, míni
 
 ## Comparação com o valor de referência e análise de frequência de negociação
 
-As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi essencial para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro.
+As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi necessária para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro.
 
 Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
 
@@ -468,7 +459,9 @@ Essa análise detalhada forneceu insights sobre a adequação das metodologias a
 
 # Resultados preliminares
 
-Ardia, Guidotti e Kroencke (2024) discutem que o EDGE é superior em resultados, principalmente quando se trata de períodos de alta volatilidade...
+O estimador EDGE tem sua construção baseada na combinação otimizada de diferentes estimadores, minimizando a variância da estimativa final. Essa abordagem faz com que o método seja eficaz tanto em cenários de spreads estreitos quanto amplos, além de se adaptar automaticamente a variações na volatilidade do mercado. Dessa forma, a metodologia EDGE se mostra particularmente superior nos períodos de alta volatilidade, nos quais outras metodologias apresentam desempenho inconsistente.
+
+A seguir, são apresentadas as análises comparativas entre os diferentes estimadores, com o objetivo de avaliar suas performances no contexto do mercado acionário brasileiro e identificar qual metodologia oferece maior precisão na mensuração do spread bid-ask.
 
 ## Análise dos estimadores
 
