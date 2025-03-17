@@ -61,6 +61,7 @@ library(readr)
 library(purrr)
 library(gt)
 library(writexl)
+library(readxl)
 library(kableExtra)
 ```
 
@@ -127,6 +128,113 @@ if (length(errors) > 0) {
   print(errors)
 } else {
   print("Todos os dados foram baixados com sucesso.")
+}
+```
+
+```{r}
+# Define the directory path
+directory <- "Bloomberg spread"
+
+# Read the Excel file from the directory
+bloomberg_data <- read_excel(file.path(directory, "Spread-bloomberg.xlsx"), sheet = "Base de dados")
+
+# Get the date column (assuming it's the first column)
+date_col <- bloomberg_data[, 1]
+
+# Initialize a list to store individual stock dataframes
+stock_dfs <- list()
+
+# Process each stock (assuming groups of 3 columns: Last Price, Bid Price, Ask Price)
+num_stocks <- (ncol(bloomberg_data) - 1) / 3  # Subtract 1 for date column
+
+for (i in 1:num_stocks) {
+  # Calculate column indices
+  last_col_idx <- 1 + (i-1)*3 + 1
+  bid_col_idx <- 1 + (i-1)*3 + 2
+  ask_col_idx <- 1 + (i-1)*3 + 3
+  
+  # Extract stock name from column header (adjust as needed)
+  stock_name <- gsub(" Last Price", "", names(bloomberg_data)[last_col_idx])
+  
+  # Create dataframe for this stock with explicit conversion to numeric
+  stock_df <- data.frame(
+    Date = date_col,
+    Bid_Price = as.numeric(as.character(bloomberg_data[[bid_col_idx]])),
+    Ask_Price = as.numeric(as.character(bloomberg_data[[ask_col_idx]]))
+  )
+  
+  # Calculate bid-ask spread percentage handling NA values
+  stock_df$Bid_Ask_Spread_Pct <- ifelse(
+    !is.na(stock_df$Ask_Price) & !is.na(stock_df$Bid_Price) & stock_df$Ask_Price > 0 & stock_df$Bid_Price > 0,
+    (stock_df$Ask_Price - stock_df$Bid_Price) / ((stock_df$Ask_Price + stock_df$Bid_Price) / 2) * 100,
+    NA
+  )
+  
+  # Store in the list
+  stock_dfs[[stock_name]] <- stock_df
+  
+  # Save to CSV in the same directory
+  write.csv(stock_df, file = file.path(directory, paste0(stock_name, ".csv")), row.names = FALSE)
+}
+```
+
+```{r}
+# List all CSV files in the directory that end with "-"
+csv_files <- list.files(path = directory, pattern = ".*-\\.csv$", full.names = TRUE)
+
+# Function to read a CSV file and extract company code
+read_company_csv <- function(file_path) {
+  # Extract the filename without extension
+  filename <- tools::file_path_sans_ext(basename(file_path))
+  
+  # Read the CSV
+  data <- read_csv(file_path)
+  
+  # First, check what the actual column names are
+  date_column <- names(data)[grep("Date", names(data), ignore.case = TRUE)]
+  
+  if (length(date_column) == 0) {
+    warning("No date column found in file: ", file_path)
+    return(NULL)
+  }
+  
+  # Add company code column and select only needed columns
+  data %>%
+    mutate(Company_Code = filename) %>%
+    select(Company_Code, !!date_column, Bid_Ask_Spread_Pct) %>%
+    rename(Date = !!date_column)  # Standardize to "Date"
+}
+
+# Read all CSVs and combine them
+if (length(csv_files) > 0) {
+  # Use safely to handle potential errors
+  safe_read <- safely(read_company_csv)
+  results <- map(csv_files, safe_read)
+  
+  # Extract successful results
+  valid_data <- map(results, "result") %>% 
+    compact()
+  
+  if (length(valid_data) > 0) {
+    spreads_company <- bind_rows(valid_data)
+    
+    # Clean up company codes by removing hyphens at the end
+    spreads_company <- spreads_company %>%
+      mutate(Company_Code = str_replace(Company_Code, " -$", ""))
+    
+    # Save to global environment
+    assign("spreads_company", spreads_company, envir = .GlobalEnv)
+    
+    # Optionally save to CSV
+    write_csv(spreads_company, file.path(directory, "spreads_company.csv"))
+    
+    cat("Created 'spreads_company' with", nrow(spreads_company), "rows and", 
+        length(unique(spreads_company$Company_Code)), "unique companies.\n")
+  } else {
+    cat("No valid data found in any of the CSV files.\n")
+  }
+} else {
+  cat("No CSV files found that end with '-'.\n")
 }
 ```
 
@@ -233,6 +341,29 @@ company_spreads_df <- pmap_dfr(
     )
   }
 )
+
+# Primeiro, remove o sufixo ".SA" dos códigos das empresas em company_spreads_df
+company_spreads_df <- company_spreads_df %>%
+  mutate(Company_Code = str_replace(Company_Code, "\\.SA$", ""))
+
+# Renomeie a coluna Bid_Ask_Spread_Pct para Spread_Bloomberg
+spreads_bloomberg <- spreads_company %>%
+  rename(Spread_Bloomberg = Bid_Ask_Spread_Pct)
+
+# Junte os dataframes baseado em Company_Code e Date
+company_spreads_df_with_bloomberg <- left_join(
+  company_spreads_df,
+  spreads_bloomberg %>% select(Company_Code, Date, Spread_Bloomberg),
+  by = c("Company_Code", "Date")
+)
+
+# Verifique os resultados
+cat("Número de linhas no dataframe original:", nrow(company_spreads_df), "\n")
+cat("Número de linhas após junção com dados Bloomberg:", nrow(company_spreads_df_with_bloomberg), "\n")
+cat("Número de correspondências encontradas (não-NA):", sum(!is.na(company_spreads_df_with_bloomberg$Spread_Bloomberg)), "\n")
+
+# Substituir o dataframe original
+company_spreads_df <- company_spreads_df_with_bloomberg
 
 # Calcular os spreads médios para cada ano em cada método e aplicar na variável company_spreads_year
 company_spreads_year <- company_spreads_df %>%
@@ -439,21 +570,40 @@ Essa escolha também facilita a análise do impacto de diferentes frequências d
 
 O cálculo foi realizado sobre as séries de preços de abertura, máxima, mínima, fechamento (OHLC) e volumes diários obtidos diretamente da B3. As metodologias foram aplicadas sem modificações adicionais, seguindo rigorosamente os algoritmos descritos nos trabalhos originais, de forma a garantir a comparabilidade com os benchmarks teóricos.
 
-## Comparação com o valor de referência e análise de frequência de negociação
+## Métricas de Avaliação
 
-As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi necessária para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro.
+As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi necessária para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro. Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
 
-Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
+### Métricas de Erro
 
-Para aprofundar a análise, as ações foram classificadas com base no volume médio diário de negociação, visando compreender o impacto da liquidez sobre o desempenho dos estimadores. Essa classificação utilizou os quantis dos volumes médios para segmentar os ativos em dois grupos principais:
+Para quantificar a precisão das estimativas geradas por cada metodologia em relação aos valores oficiais da Bloomberg, foram utilizadas as seguintes métricas de erro:
 
-30% com maiores volumes: Representando ações altamente líquidas.
+#### Erro Quadrático Médio (RMSE)
 
-30% com menores volumes: Representando ações com baixa liquidez.
+O RMSE é uma medida amplamente utilizada para avaliar a magnitude dos erros de estimação, calculada pela raiz quadrada da média dos quadrados das diferenças entre valores estimados e valores reais:
 
-As estimativas de spread foram analisadas separadamente para cada grupo, permitindo observar como os estimadores se comportam em cenários de alta e baixa liquidez. Essa abordagem revelou que o EDGE apresentou maior robustez em ativos com baixa liquidez, graças à sua capacidade de corrigir vieses associados à frequência reduzida de negociações. Em contrapartida, o CS mostrou limitações significativas, com viés descendente em ativos de menor volume, enquanto o AR apresentou resultados intermediários entre os dois métodos.
+$RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$
 
-Essa análise detalhada forneceu insights sobre a adequação das metodologias a diferentes perfis de ativos no mercado brasileiro, reforçando a importância de considerar a liquidez como um fator determinante na escolha de estimadores para spread bid-ask. Além disso, contribuiu para a identificação de metodologias mais robustas para contextos de baixa liquidez, uma característica comum em mercados emergentes.
+onde $y_i$ representa o valor oficial do spread (Bloomberg) e $\hat{y}_i$ representa o valor estimado pela metodologia em análise. O RMSE atribui maior peso a erros maiores devido à operação de elevação ao quadrado, tornando-o particularmente sensível a outliers. Esta métrica foi escolhida como principal indicador de proximidade entre as estimativas e os valores reais, sendo que valores menores de RMSE indicam maior precisão da metodologia.
+
+#### Erro Absoluto Médio (MAE)
+
+Como métrica complementar, foi utilizado o MAE, calculado pela média dos valores absolutos das diferenças entre valores estimados e valores reais:
+
+$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$
+
+O MAE atribui peso igual a todos os erros, independentemente de sua magnitude, oferecendo uma perspectiva alternativa sobre a precisão das estimativas.
+
+### Teste de Similaridade Estatística
+
+Para avaliar a similaridade estatística entre as distribuições das estimativas e dos valores oficiais, foi aplicado o teste de Kolmogorov-Smirnov (KS). Este teste não paramétrico avalia a hipótese nula de que duas amostras provêm da mesma distribuição. A estatística D do teste KS é calculada como:
+
+$D = \sup_x |F_1(x) - F_2(x)∣$
+
+onde $F_1(x)$ e $F_2(x)$ são as funções de distribuição acumulada empíricas para as duas amostras sendo comparadas, e $\sup_x$ representa o supremo (máximo) das diferenças entre as duas distribuições. A interpretação dos resultados do teste KS é baseada no p-valor:
+
+-   p-valor \< 0,05: Rejeita-se a hipótese nula, indicando diferença estatisticamente significativa entre as distribuições.
+-   p-valor ≥ 0,05: Não se rejeita a hipótese nula, sugerindo que não há evidência estatística suficiente para afirmar que as distribuições são diferentes.
 
 \newpage
 
@@ -797,6 +947,55 @@ Fonte: Elaborado pelo autor
 
 Tabela indicando as principais estatísticas do método AR para o ano de 2020
 :::
+
+```{r}
+# Função para calcular o RMSE
+calcular_rmse <- function(estimativas, referencia) {
+  sqrt(mean((estimativas - referencia)^2, na.rm = TRUE))
+}
+
+# Função para calcular o MAE
+calcular_mae <- function(estimativas, referencia) {
+  mean(abs(estimativas - referencia), na.rm = TRUE)
+}
+
+# Função para realizar o teste KS e retornar resultados formatados
+realizar_ks_teste <- function(estimativas, referencia) {
+  teste <- ks.test(estimativas, referencia)
+  return(data.frame(
+    D_estatistica = teste$statistic,
+    p_valor = teste$p.value,
+    resultado = ifelse(teste$p.value < 0.05, "Distribuições diferentes", "Distribuições similares")
+  ))
+}
+
+# Aplicação das métricas para cada metodologia
+resultados_erro <- data.frame(
+  Metodologia = c("Metodologia 1", "Metodologia 2", "Metodologia 3"),
+  RMSE = c(
+    calcular_rmse(company_spreads_df$Spread_CS, company_spreads_df$Spread_Bloomberg),
+    calcular_rmse(company_spreads_df$Spread_AR, company_spreads_df$Spread_Bloomberg),
+    calcular_rmse(company_spreads_df$Spread_EDGE, company_spreads_df$Spread_Bloomberg)
+  ),
+  MAE = c(
+    calcular_mae(company_spreads_df$Spread_CS, company_spreads_df$Spread_Bloomberg),
+    calcular_mae(company_spreads_df$Spread_AR, company_spreads_df$Spread_Bloomberg),
+    calcular_mae(company_spreads_df$Spread_EDGE, company_spreads_df$Spread_Bloomberg)
+  )
+)
+
+# Aplicação do teste KS para cada metodologia
+ks_metodo1 <- realizar_ks_teste(company_spreads_df$Spread_CS, company_spreads_df$Spread_Bloomberg)
+ks_metodo2 <- realizar_ks_teste(company_spreads_df$Spread_AR, company_spreads_df$Spread_Bloomberg)
+ks_metodo3 <- realizar_ks_teste(company_spreads_df$Spread_EDGE, company_spreads_df$Spread_Bloomberg)
+
+resultados_ks <- bind_rows(
+  mutate(ks_metodo1, Metodologia = "Corwin-Schultz"),
+  mutate(ks_metodo2, Metodologia = "Abdi e Ranaldo"),
+  mutate(ks_metodo3, Metodologia = "EDGE")
+)
+
+```
 
 \newpage
 
