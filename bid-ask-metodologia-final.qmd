@@ -66,6 +66,8 @@ library(kableExtra)
 ```
 
 ```{r, include = FALSE, warning=FALSE, eval = FALSE}
+# Importa os códigos das empresas e carrega do pacote para um CSV separado
+
 # Importar códigos de empresas
 company_codes <- read_csv("company_codes.csv")
 
@@ -89,6 +91,8 @@ company_codes$Company_Code %>%
 ```
 
 ```{r, include = FALSE, show_col_types=FALSE}
+# Importa do CSV que já tem os preços
+
 # Importar códigos de empresas novamente
 company_codes <- read_csv("company_codes.csv")
 
@@ -129,6 +133,9 @@ if (length(errors) > 0) {
 } else {
   print("Todos os dados foram baixados com sucesso.")
 }
+
+# Remove todas as variáveis globais terminadas em ".SA"
+rm(list = ls(pattern = "\\.SA$"))
 ```
 
 ```{r}
@@ -286,6 +293,7 @@ high_volume <- company_volumes %>%
 company_data_clean_high_volume <- company_data_clean[high_volume]
 company_data_clean_low_volume <- company_data_clean[low_volume]
 
+rm(low_volume,high_volume,volume_30,volume_70,company_volumes)
 ```
 
 <!--Cálculo dos spreads EDGE e CS para toda a base-->
