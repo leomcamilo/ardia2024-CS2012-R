@@ -293,7 +293,7 @@ high_volume <- company_volumes %>%
 company_data_clean_high_volume <- company_data_clean[high_volume]
 company_data_clean_low_volume <- company_data_clean[low_volume]
 
-rm(low_volume,high_volume,volume_30,volume_70,company_volumes)
+# rm(low_volume,high_volume,volume_30,volume_70,company_volumes)
 ```
 
 <!--Cálculo dos spreads EDGE e CS para toda a base-->
@@ -408,19 +408,19 @@ O spread bid-ask é uma medida fundamental na microestrutura de mercado, represe
 
 No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros instrumentos financeiros. A bolsa tem se destacado por sua infraestrutura tecnológica avançada e por iniciativas voltadas à inclusão financeira e ao aumento da liquidez do mercado. No entanto, os mercados emergentes, como o brasileiro, ainda enfrentam desafios significativos, incluindo menor liquidez e maior volatilidade em comparação com mercados desenvolvidos.
 
-A literatura sobre bid-ask spread tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas metodologias a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas metodologias se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
+A literatura sobre spread bid-ask tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas metodologias a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas metodologias se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
 
 ### Relevância e justificativa
 
-Medir o bid-ask spread é de extrema relevância para diversos stakeholders no mercado financeiro. Corwin (2012) destaca que, para os investidores, o spread bid-ask é um indicador direto dos custos de transação e da liquidez do mercado, influenciando decisões de compra e venda de ativos. Reguladores utilizam essa medida para monitorar a eficiência do mercado e identificar possíveis práticas de manipulação de preços. Acadêmicos, por sua vez, empregam o bid-ask spread como uma variável chave em estudos sobre microestrutura de mercado, eficiência de preços e assimetria informacional.
+Medir o spread bid-ask é de extrema relevância para diversos stakeholders no mercado financeiro. Corwin (2012) destaca que, para os investidores, o spread bid-ask é um indicador direto dos custos de transação e da liquidez do mercado, influenciando decisões de compra e venda de ativos. Reguladores utilizam essa medida para monitorar a eficiência do mercado e identificar possíveis práticas de manipulação de preços. Acadêmicos, por sua vez, empregam o spread bid-ask como uma variável chave em estudos sobre microestrutura de mercado, eficiência de preços e assimetria informacional.
 
-Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do bid-ask spread aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
+Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do spread bid-ask aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
 
-A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do bid-ask spread. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
+A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do spread bid-ask. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
 
 # Objetivos
 
-Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral comparar, no mercado acionário brasileiro, estimativas de bid-ask spread obtidas pelas abordagens de Corwin & Schultz (2012), Abdi & Ranaldo (2017) e EDGE (Ardia, Guidotti & Kroencke, 2024), tendo como referência a cotação de spread divulgada pela Bloomberg.
+Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral comparar, no mercado acionário brasileiro, estimativas de spread bid-ask obtidas pelas abordagens de Corwin & Schultz (2012), Abdi & Ranaldo (2017) e EDGE (Ardia, Guidotti & Kroencke, 2024), tendo como referência a cotação de spread divulgada pela Bloomberg.
 
 \newpage
 
@@ -602,7 +602,7 @@ $MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$
 
 O MAE atribui peso igual a todos os erros, independentemente de sua magnitude, oferecendo uma perspectiva alternativa sobre a precisão das estimativas.
 
-### Teste de Similaridade Estatística
+### Teste de Similaridade Estatística - Kolmogorov-Smirnov
 
 Para avaliar a similaridade estatística entre as distribuições das estimativas e dos valores oficiais, foi aplicado o teste de Kolmogorov-Smirnov (KS). Este teste não paramétrico avalia a hipótese nula de que duas amostras provêm da mesma distribuição. A estatística D do teste KS é calculada como:
 
@@ -1005,6 +1005,77 @@ resultados_ks <- bind_rows(
 
 ```
 
+## Análise Comparativa com Dados de Referência da Bloomberg
+
+Para avaliar a eficácia dos estimadores estudados em relação a uma referência de mercado amplamente reconhecida, realizou-se uma análise comparativa entre os spreads bid-ask estimados pelos métodos EDGE, CS e AR e os valores reportados pela Bloomberg. Esta comparação é fundamental para determinar qual metodologia oferece estimativas mais precisas no contexto específico do mercado brasileiro.
+
+### Teste de Similaridade Estatística
+
+O teste de Kolmogorov-Smirnov (KS) foi aplicado para verificar se as distribuições dos spreads estimados pelos três métodos são estatisticamente similares à distribuição dos valores de referência da Bloomberg. Este teste não paramétrico avalia a hipótese nula de que duas amostras provêm da mesma distribuição populacional.
+
+::: {#tbl-tabelakolmogorov}
+```{r}
+# Formatar a tabela resultados_ks usando gt
+resultados_ks_formatado <- resultados_ks %>%
+  gt() %>%
+  cols_label(
+    Metodologia = "Metodologia",
+    D_estatistica = "Estatística D",
+    p_valor = "p-valor",
+    resultado = "Resultado"
+  ) %>%
+  fmt_number(
+    columns = c("D_estatistica", "p_valor"),
+    decimals = 6
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_labels()
+  ) %>%
+  cols_width(
+    Metodologia ~ px(150),
+    D_estatistica ~ px(120),
+    p_valor ~ px(120),
+    resultado ~ px(180)
+  ) %>%
+  tab_options(
+    table.width = pct(100),
+    column_labels.background.color = "lightgray",
+    table.border.top.width = px(3),
+    table.border.bottom.width = px(3)
+  )
+
+# Exibir a tabela formatada
+resultados_ks_formatado
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando o resultado do teste de Kolmogorov-Smirnov para cada metodologia de estimativa de spread bid-ask
+:::
+
+Conforme a tabela @tbl-tabelakolmogorov, os resultados do teste KS revelaram p-valores iguais a zero e estatísticas D próximas a 1 para todas as três metodologias, indicando uma rejeição contundente da hipótese nula. Isso evidencia que as distribuições dos spreads estimados por CS, AR e EDGE são estatisticamente diferentes da distribuição dos spreads de referência da Bloomberg. Estas diferenças não são meramente aleatórias, mas refletem divergências sistemáticas nas estimativas. Este resultado sugere que os três métodos provavelmente capturam diferentes aspectos dos spreads ou possuem vieses estruturais distintos em relação aos valores de referência. A rejeição da hipótese nula para todos os estimadores indica a complexidade inerente à mensuração do spread bid-ask em mercados emergentes, onde fatores específicos podem não ser adequadamente capturados pelos modelos desenvolvidos originalmente para mercados mais líquidos e eficientes.
+
+### Métricas de Erro
+
+Para quantificar a precisão das estimativas em relação aos valores de referência, foram calculadas duas métricas de erro: o Erro Quadrático Médio (RMSE) e o Erro Absoluto Médio (MAE). Estas métricas permitem uma avaliação objetiva da magnitude das diferenças entre os valores estimados e os valores de referência. Os resultados das métricas de erro revelaram diferenças significativas entre as metodologias:
+
+O estimador EDGE apresentou desempenho superior, com RMSE de 0,9658148 e MAE de 0,3256090, valores substancialmente menores que os observados para as outras metodologias. Os estimadores CS e AR mostraram desempenho semelhante entre si, com RMSE em torno de 2,74. O estimador AR apresentou um MAE ligeiramente menor (0,4326942) em comparação ao CS (0,4397678).
+
+Estes resultados indicam que, embora nenhuma das metodologias reproduza perfeitamente a distribuição dos spreads Bloomberg (conforme indicado pelo teste KS), o estimador EDGE consegue gerar aproximações pontuais consideravelmente mais precisas. O erro quadrático médio do EDGE é aproximadamente 65% menor que o dos outros estimadores, o que representa uma vantagem significativa em termos de precisão.
+
+### Interpretação Integrada
+
+A análise integrada dos resultados do teste KS e das métricas de erro permite uma compreensão mais completa do desempenho relativo dos estimadores no contexto do mercado brasileiro. Apesar de todas as metodologias produzirem distribuições estatisticamente diferentes dos valores de referência, o EDGE demonstrou capacidade superior para aproximar-se dos valores individuais, o que é evidenciado por seu menor RMSE e MAE. Essa característica é particularmente relevante em aplicações práticas, onde a precisão pontual das estimativas é frequentemente mais importante que a reprodução exata da distribuição completa. A superioridade do EDGE pode ser atribuída à sua abordagem mais abrangente, que incorpora informações dos preços de abertura, máxima, mínima e fechamento, conforme descrito por Ardia, Guidotti e Kroencke (2024). Além disso, o EDGE inclui um termo de correção analítico para a negociação infrequente, característica comum em mercados menos líquidos como o brasileiro. Por outro lado, o desempenho similar dos estimadores CS e AR em termos de métricas de erro, apesar de suas diferentes formulações matemáticas, sugere que ambos podem estar sujeitos a limitações semelhantes quando aplicados ao mercado brasileiro. Isso pode estar relacionado a pressupostos subjacentes a esses modelos que não se aplicam plenamente ao contexto de mercados emergentes.
+
+### Implicações para o Mercado Brasileiro
+
+Os resultados desta análise comparativa têm implicações significativas para a escolha de metodologias de estimativa do spread bid-ask no mercado brasileiro:
+
+O estimador EDGE emerge como a opção mais adequada para aplicações práticas, oferecendo estimativas com erro médio absoluto de aproximadamente 0,33 pontos base em relação aos valores de referência da Bloomberg. O fato de todas as metodologias produzirem distribuições estatisticamente diferentes da Bloomberg sugere que fatores específicos do mercado brasileiro, como a concentração de liquidez em determinados ativos e períodos, podem não estar sendo adequadamente capturados pelos modelos existentes. Estes achados corroboram a literatura que sugere que o EDGE é mais robusto em cenários de baixa liquidez e mercados emergentes, como mencionado no referencial teórico.
+
+Em suma, enquanto nenhuma das metodologias analisadas reproduz perfeitamente os valores de referência da Bloomberg, o estimador EDGE oferece uma alternativa significativamente mais precisa quando os dados de alta frequência não estão disponíveis. Esta conclusão é particularmente relevante para pesquisadores, investidores e reguladores interessados na microestrutura do mercado brasileiro e em seus custos de transação.
+
 \newpage
 
 # Limitações e próximos passos
@@ -1017,7 +1088,7 @@ Adicionalmente, os estimadores baseados em dados de baixa frequência, como os u
 
 No que se refere aos trabalhos de Abdi e Ranaldo (2017) e de Ardia, Guidotti e Kroencke (2024), apesar de apresentarem metodologias robustas para a estimativa do spread bid-ask, suas abordagens podem não considerar fatores específicos presentes no mercado brasileiro. Questões como a estrutura de formação de preços na B3, a concentração de liquidez em determinados horários do pregão e a influência de notícias locais podem impactar a dinâmica dos spreads de maneira diferente do que ocorre em mercados estrangeiros. Além disso, possíveis restrições de acesso a dados granulares no Brasil podem limitar a aplicação direta dos métodos propostos nesses estudos.
 
-Quanto aos próximos passos incluem a implementação prática dos modelos de estimativa do bid-ask spread utilizando dados do mercado brasileiro. A análise comparativa dos métodos será refinada, com a aplicação de técnicas adicionais de validação estatística. Além disso, o trabalho focará na elaboração do manuscrito final da dissertação, incorporando discussões aprofundadas sobre os resultados obtidos. Por fim, serão realizados ajustes necessários para atender aos requisitos da banca e incluir potenciais contribuições adicionais levantadas durante a qualificação.
+Quanto aos próximos passos incluem a implementação prática dos modelos de estimativa do spread bid-ask utilizando dados do mercado brasileiro. A análise comparativa dos métodos será refinada, com a aplicação de técnicas adicionais de validação estatística. Além disso, o trabalho focará na elaboração do manuscrito final da dissertação, incorporando discussões aprofundadas sobre os resultados obtidos. Por fim, serão realizados ajustes necessários para atender aos requisitos da banca e incluir potenciais contribuições adicionais levantadas durante a qualificação.
 
 \newpage
 
