@@ -138,7 +138,7 @@ if (length(errors) > 0) {
 rm(list = ls(pattern = "\\.SA$"))
 ```
 
-```{r}
+```{r, include=FALSE}
 # Define the directory path
 directory <- "Bloomberg spread"
 
@@ -185,7 +185,7 @@ for (i in 1:num_stocks) {
 }
 ```
 
-```{r}
+```{r, include=FALSE}
 # List all CSV files in the directory that end with "-"
 csv_files <- list.files(path = directory, pattern = ".*-\\.csv$", full.names = TRUE)
 
@@ -251,7 +251,7 @@ Seleção dos 30% maiores e 30% menores volumes diários; Ou seja, maiores e men
 -->
 ```
 
-```{r}
+```{r, include=FALSE}
 # Agrupar as empresas com maiores médias de volume diários e selecionar os 30% maiores e 30% menores
 
 # Calcular a média de volume para cada empresa
@@ -298,7 +298,7 @@ company_data_clean_low_volume <- company_data_clean[low_volume]
 
 <!--Cálculo dos spreads EDGE e CS para toda a base-->
 
-```{r}
+```{r, include=FALSE}
 
 # Função para converter dataframe em xts
 convert_to_xts <- function(df) {
@@ -402,6 +402,7 @@ company_spreads_pos <- company_spreads_year %>%
 
 # Introdução
 
+
 ## Contexto
 
 O spread bid-ask é uma medida fundamental na microestrutura de mercado, representando a diferença entre os preços de compra (bid) e venda (ask) de um ativo. Este spread reflete os custos de transação e a liquidez do mercado, sendo influenciado por fatores como a volatilidade do ativo, a frequência de negociação e a assimetria de informações entre os participantes do mercado. A análise do spread bid-ask é crucial para entender a eficiência do mercado e os custos enfrentados pelos investidores.
@@ -418,9 +419,13 @@ Este trabalho busca preencher lacunas importantes na literatura ao realizar uma 
 
 A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do spread bid-ask. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
 
+\newpage
+
 # Objetivos
 
 Considerando a relevância do spread bid-ask na formação de preços de ativos financeiros e seu impacto na liquidez e nos custos de transação, este estudo tem como objetivo geral comparar, no mercado acionário brasileiro, estimativas de spread bid-ask obtidas pelas abordagens de Corwin & Schultz (2012), Abdi & Ranaldo (2017) e EDGE (Ardia, Guidotti & Kroencke, 2024), tendo como referência a cotação de spread divulgada pela Bloomberg.
+
+A análise comparativa das metodologias selecionadas abrangerá tanto períodos de relativa estabilidade quanto momentos de volatilidade acentuada, com especial atenção ao período da pandemia de COVID-19 em 2020. Esta abordagem permitirá avaliar não apenas a precisão geral dos estimadores, mas também sua robustez e capacidade de capturar as variações nos custos de transação em condições extremas de mercado, fornecendo insights valiosos sobre a microestrutura do mercado brasileiro em diferentes contextos econômicos.
 
 \newpage
 
@@ -468,7 +473,9 @@ Em suma, a presença de formadores de mercado em ações na B3 visa principalmen
 
 A mensuração do spread bid-ask pode ser realizada por meio de dados de alta frequência, que registram de forma contínua as cotações e negociações ao longo do dia, ou através de dados de baixa frequência, os quais utilizam informações agregadas, como os preços de fechamento, máxima e mínima diários. Em contextos onde os dados de alta frequência são escassos ou de difícil acesso, os métodos de estimação baseados em dados agregados tornam-se fundamentais para a avaliação dos custos de transação e da liquidez dos ativos.
 
-Neste trabalho, serão utilizadas três metodologias de estimação de baixa frequência que vêm contribuindo de maneira inovadora para aprimorar a medição do spread bid-ask. A abordagem de Corwin e Schultz (2012) introduz uma forma simplificada de inferir o spread a partir das oscilações diárias, enquanto a proposta de Abdi e Ranaldo (2017) aprimora esse método ao reduzir incertezas inerentes às estimativas com dados diários. Por fim, a metodologia de Ardia, Guidotti e Kroencke (2024) integra informações adicionais, como o preço de abertura, proporcionando uma estimativa mais robusta e precisa.
+Para fundamentar este trabalho, foi realizada uma Revisão Narrativa de Literatura (RNL) durante a etapa de qualificação desta dissertação, a qual permitiu identificar as metodologias mais relevantes e inovadoras no campo da estimação do spread bid-ask. A partir dessa revisão, foram selecionadas três metodologias de estimação de baixa frequência que vêm contribuindo de maneira significativa para aprimorar a medição do spread bid-ask e que apresentam potencial aplicabilidade ao mercado brasileiro.
+
+A abordagem de Corwin e Schultz (2012) introduz uma forma simplificada de inferir o spread a partir das oscilações diárias, enquanto a proposta de Abdi e Ranaldo (2017) aprimora esse método ao reduzir incertezas inerentes às estimativas com dados diários. Por fim, a metodologia de Ardia, Guidotti e Kroencke (2024) integra informações adicionais, como o preço de abertura, proporcionando uma estimativa mais robusta e precisa.
 
 O modelo de Corwin e Schultz (2012) foi um dos primeiros a propor uma metodologia baseada apenas em preços diários de máxima e mínima para estimar o spread bid-ask. A ideia central do modelo é que o intervalo entre os preços mais altos e mais baixos de um dia reflete tanto a volatilidade do ativo quanto a diferença entre os preços de compra e venda. Assim, os autores derivam um estimador baseado na comparação entre a soma dos intervalos de dois dias consecutivos e o intervalo total de dois dias. Esse modelo trouxe uma abordagem simples e aplicável a mercados onde não há disponibilidade de dados de cotações intradiárias​
 
@@ -562,7 +569,7 @@ Comparando com métodos anteriores, como o de Abdi e Ranaldo, o EDGE generaliza 
 
 Sendo assim, o EDGE é uma contribuição relevante para a literatura de microestrutura de mercado, oferecendo uma ferramenta confiável e eficiente para a estimação de custos de transação. Ele não apenas melhora a precisão das estimativas em relação a métodos tradicionais, mas também amplia sua aplicabilidade a diversos contextos de mercado, como períodos históricos e mercados emergentes.
 
-Os três estimadores discutidos – Corwin-Schultz (CS), Abdi-Ranaldo (AR) e EDGE – foram escolhidos para este estudo devido à sua relevância teórica, robustez metodológica e capacidade de oferecer insights em diferentes contextos de mercado. Além disso, suas características complementares permitem uma análise comparativa detalhada de suas performances no mercado brasileiro, que é classificado como emergente.
+Os três estimadores discutidos – Corwin-Schultz (CS), Abdi-Ranaldo (AR) e EDGE – foram escolhidos para este estudo com base nos achados da Revisão Narrativa de Literatura (RSL), que identificou estes modelos como os mais relevantes e inovadores para a estimação do spread bid-ask no contexto de mercados emergentes. A RSL permitiu mapear a evolução das metodologias de estimação, desde abordagens mais tradicionais até as contribuições mais recentes, destacando estes três estimadores por sua relevância teórica, robustez metodológica e capacidade de oferecer insights em diferentes contextos de mercado. Além disso, suas características complementares permitem uma análise comparativa detalhada de suas performances no mercado brasileiro, que é classificado como emergente.
 
 A aplicação dos métodos será realizada em três períodos distintos: pré-pandemia, durante a pandemia e no pós-pandemia. O período pré-pandemia é caracterizado por uma maior estabilidade econômica e condições de mercado mais previsíveis, oferecendo uma base para avaliar o desempenho dos estimadores em um cenário mais controlado. Durante a pandemia, o mercado foi marcado por alta volatilidade e incertezas, o que representa um contexto de maior desafio para os estimadores, especialmente em ativos menos líquidos. Por fim, o período pós-pandemia reflete um mercado em processo de readaptação, com uma recuperação gradual da liquidez e uma nova estabilidade, permitindo verificar a consistência dos métodos em cenários intermediários.
 
@@ -578,11 +585,11 @@ Essa escolha também facilita a análise do impacto de diferentes frequências d
 
 O cálculo foi realizado sobre as séries de preços de abertura, máxima, mínima, fechamento (OHLC) e volumes diários obtidos diretamente da B3. As metodologias foram aplicadas sem modificações adicionais, seguindo rigorosamente os algoritmos descritos nos trabalhos originais, de forma a garantir a comparabilidade com os benchmarks teóricos.
 
-## Métricas de Avaliação
+## Métricas de avaliação
 
 As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi necessária para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro. Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
 
-### Métricas de Erro
+### Métricas de erro
 
 Para quantificar a precisão das estimativas geradas por cada metodologia em relação aos valores oficiais da Bloomberg, foram utilizadas as seguintes métricas de erro:
 
@@ -602,7 +609,7 @@ $MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$
 
 O MAE atribui peso igual a todos os erros, independentemente de sua magnitude, oferecendo uma perspectiva alternativa sobre a precisão das estimativas.
 
-### Teste de Similaridade Estatística - Kolmogorov-Smirnov
+### Teste de similaridade estatística - Kolmogorov-Smirnov
 
 Para avaliar a similaridade estatística entre as distribuições das estimativas e dos valores oficiais, foi aplicado o teste de Kolmogorov-Smirnov (KS). Este teste não paramétrico avalia a hipótese nula de que duas amostras provêm da mesma distribuição. A estatística D do teste KS é calculada como:
 
@@ -615,7 +622,7 @@ onde $F_1(x)$ e $F_2(x)$ são as funções de distribuição acumulada empírica
 
 \newpage
 
-# Resultados preliminares
+# Resultados
 
 O estimador EDGE tem sua construção baseada na combinação otimizada de diferentes estimadores, minimizando a variância da estimativa final. Essa abordagem faz com que o método seja eficaz tanto em cenários de spreads estreitos quanto amplos, além de se adaptar automaticamente a variações na volatilidade do mercado. Dessa forma, a metodologia EDGE se mostra particularmente superior nos períodos de alta volatilidade, nos quais outras metodologias apresentam desempenho inconsistente.
 
@@ -742,6 +749,9 @@ tabela_AR <- stats_table_AR %>%
 
 ```
 
+
+Como visto na @tbl-estatsedge, com as estatística do EDGE, na @tbl-estatscs, com as estatísticas do CS, e na @tbl-estatsar, com as estatísticas do AR, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de $2.2 \times 10^{-5}$ para ativos mais líquidos e $1,6 \times 10^{-5}$ para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia, Guidotti e Kroencke (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+
 ::: {#tbl-estatsedge}
 ```{r}
 #| tbl-pos: H
@@ -776,8 +786,6 @@ Fonte: Elaborado pelo autor
 
 Tabela indicando as principais estatísticas do método AR
 :::
-
-Como visto na @tbl-estatsedge, com as estatística do EDGE, na @tbl-estatscs, com as estatísticas do CS, e na @tbl-estatsar, com as estatísticas do AR, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de $2.2 \times 10^{-5}$ para ativos mais líquidos e $1,6 \times 10^{-5}$ para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia, Guidotti e Kroencke (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
 
 Segundo Ardia, Guidotti e Kroencke (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
 
@@ -908,53 +916,226 @@ tabela_AR_2020 <- stats_table_AR_2020 %>%
 
 ```
 
-Ao comparar os resultados obtidos para todo o período de análise, de 2017 a 2023, com os resultados específicos do ano de 2020, marcado por alta volatilidade devido à pandemia de COVID-19, observamos certas variações nos spreads bid-ask estimados pelas três metodologias: CS, EDGE e AR.
 
-Em 2020, todos os estimadores registraram um aumento significativo nas médias dos spreads bid-ask em comparação com o período total. Esse aumento é consistente com o contexto de alta volatilidade e incerteza do mercado durante a pandemia.
 
-Os dados na @tbl-estatscs20 mostram que o estimador CS apresentou valores médios de spread bid-ask menores em relação aos estimadores EDGE e AR, tanto no período total quanto em 2020. Contudo, durante o ano de 2020, o CS registrou um aumento na média do spread bid-ask de aproximadamente 31% para ativos mais líquidos, de 0,004102 para 0,005204 e 23% para ativos menos líquidos, de 0,004512 para 0,005569.
 
-Já o estimador EDGE, na @tbl-estatsedge20, apresentou um aumento mais acentuado nas médias dos spreads bid-ask em 2020. Para ativos mais líquidos, a média passou de 0,008308 no período total para 0,011808 em 2020, um aumento de cerca de 42%. Para ativos menos líquidos, o aumento foi de aproximadamente 43%, de 0,008709 para 0,012413.
+```{r, include = FALSE}
+# Filtrar os dados para os períodos específicos
+company_spreads_df_pre <- company_spreads_df %>%
+  filter(year(Date) %in% c(2018, 2019))
 
-O estimador AR, na @tbl-estatsar20, registrou os maiores valores médios de spread bid-ask em ambos os períodos analisados. Em 2020, a média para ativos mais líquidos aumentou em cerca de 40%, de 0,011013 para 0,015371, enquanto para ativos menos líquidos, o aumento foi de aproximadamente 36%, de 0,012382 para 0,016809.
+company_spreads_df_2020 <- company_spreads_df %>%
+  filter(year(Date) == 2020)
 
-Esses resultados podem indicar uma maior sensibilidade dos estimadores EDGE e AR às condições de volatilidade do mercado, capturando de forma mais pronunciada o aumento nos custos de transação durante períodos de alta volatilidade.
+company_spreads_df_pos <- company_spreads_df %>%
+  filter(year(Date) %in% c(2021, 2022))
 
-A análise evidencia que, em períodos de alta volatilidade, como o ano de 2020, os estimadores EDGE e AR tendem a fornecer estimativas de spread bid-ask superiores ao estimador CS. Isso pode sugerir que EDGE e AR capturem de maneira mais eficaz o aumento dos custos de transação e a diminuição da liquidez que tipicamente ocorrem em mercados voláteis.
+# Calcular estatísticas para período pré-pandemia
+stats_table_pre_CS <- company_spreads_df_pre %>%
+  summarise(
+    Media_CS = mean(Spread_CS, na.rm = TRUE),
+    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
+    Mediana_CS = median(Spread_CS, na.rm = TRUE),
+    Maximo_CS = max(Spread_CS, na.rm = TRUE),
+    Minimo_CS = min(Spread_CS, na.rm = TRUE)
+  ) %>%
+  mutate(Group = "Pré-pandemia")
 
-O estimador CS, por sua vez, embora tenha registrado aumentos nos spreads em 2020, ainda apresenta valores consideravelmente menores, o que pode indicar uma limitação em sua capacidade de refletir plenamente as condições de mercado adversas. Essa limitação pode ser atribuída à suposição implícita no modelo CS de negociação contínua e alta liquidez, que não se sustenta em períodos de turbulência do mercado.
+stats_table_pre_EDGE <- company_spreads_df_pre %>%
+  summarise(
+    Media_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
+    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
+    Maximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
+    Minimo_EDGE = min(Spread_EDGE, na.rm = TRUE)
+  ) %>%
+  mutate(Group = "Pré-pandemia")
 
-Os estimadores EDGE e AR demonstraram maior robustez em condições de baixa liquidez e alta volatilidade. O EDGE, com seu termo de correção analítico para negociação infrequente, consegue manter estimativas não viesadas mesmo quando a frequência de negociações diminui. O AR também se mostrou eficaz nesse contexto, estimando spreads maiores que refletem os aumentos nos custos de transação enfrentados pelos investidores.
+stats_table_pre_AR <- company_spreads_df_pre %>%
+  summarise(
+    Media_AR = mean(Spread_AR, na.rm = TRUE),
+    DesvPad_AR = sd(Spread_AR, na.rm = TRUE),
+    Mediana_AR = median(Spread_AR, na.rm = TRUE),
+    Maximo_AR = max(Spread_AR, na.rm = TRUE),
+    Minimo_AR = min(Spread_AR, na.rm = TRUE)
+  ) %>%
+  mutate(Group = "Pré-pandemia")
 
-::: {#tbl-estatsedge20}
-```{r}
-tabela_EDGE_2020
+# Calcular estatísticas para período pós-pandemia
+stats_table_pos_CS <- company_spreads_df_pos %>%
+  summarise(
+    Media_CS = mean(Spread_CS, na.rm = TRUE),
+    DesvPad_CS = sd(Spread_CS, na.rm = TRUE),
+    Mediana_CS = median(Spread_CS, na.rm = TRUE),
+    Maximo_CS = max(Spread_CS, na.rm = TRUE),
+    Minimo_CS = min(Spread_CS, na.rm = TRUE)
+  ) %>%
+  mutate(Group = "Pós-pandemia")
+
+stats_table_pos_EDGE <- company_spreads_df_pos %>%
+  summarise(
+    Media_EDGE = mean(Spread_EDGE, na.rm = TRUE),
+    DesvPad_EDGE = sd(Spread_EDGE, na.rm = TRUE),
+    Mediana_EDGE = median(Spread_EDGE, na.rm = TRUE),
+    Maximo_EDGE = max(Spread_EDGE, na.rm = TRUE),
+    Minimo_EDGE = min(Spread_EDGE, na.rm = TRUE)
+  ) %>%
+  mutate(Group = "Pós-pandemia")
+
+stats_table_pos_AR <- company_spreads_df_pos %>%
+  summarise(
+    Media_AR = mean(Spread_AR, na.rm = TRUE),
+    DesvPad_AR = sd(Spread_AR, na.rm = TRUE),
+    Mediana_AR = median(Spread_AR, na.rm = TRUE),
+    Maximo_AR = max(Spread_AR, na.rm = TRUE),
+    Minimo_AR = min(Spread_AR, na.rm = TRUE)
+  ) %>%
+  mutate(Group = "Pós-pandemia")
+
+# Combinar estatísticas com dados existentes da pandemia
+stats_table_CS_completo <- bind_rows(
+  stats_table_pre_CS,
+  stats_table_2020 %>% filter(Group == "Todos") %>% 
+    select(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS) %>%
+    mutate(Group = "Pandemia"),
+  stats_table_pos_CS
+)
+
+stats_table_EDGE_completo <- bind_rows(
+  stats_table_pre_EDGE,
+  stats_table_2020 %>% filter(Group == "Todos") %>% 
+    select(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE) %>%
+    mutate(Group = "Pandemia"),
+  stats_table_pos_EDGE
+)
+
+stats_table_AR_completo <- bind_rows(
+  stats_table_pre_AR,
+  stats_table_2020 %>% filter(Group == "Todos") %>% 
+    select(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR) %>%
+    mutate(Group = "Pandemia"),
+  stats_table_pos_AR
+)
+
+# Criar as tabelas expandidas
+tabela_CS_completa <- stats_table_CS_completo %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "CS",
+    columns = c("Media_CS", "DesvPad_CS", "Mediana_CS", "Maximo_CS", "Minimo_CS")
+  ) %>%
+  cols_label(
+    Media_CS = "Média",
+    DesvPad_CS = "DesvPad",
+    Mediana_CS = "Mediana",
+    Maximo_CS = "Máximo",
+    Minimo_CS = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS),
+    decimals = 6
+  )
+
+tabela_EDGE_completa <- stats_table_EDGE_completo %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "EDGE",
+    columns = c("Media_EDGE", "DesvPad_EDGE", "Mediana_EDGE", "Maximo_EDGE", "Minimo_EDGE")
+  ) %>%
+  cols_label(
+    Media_EDGE = "Média",
+    DesvPad_EDGE = "DesvPad",
+    Mediana_EDGE = "Mediana",
+    Maximo_EDGE = "Máximo",
+    Minimo_EDGE = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE),
+    decimals = 6
+  )
+
+tabela_AR_completa <- stats_table_AR_completo %>%
+  gt(rowname_col = "Group") %>%
+  tab_spanner(
+    label = "AR",
+    columns = c("Media_AR", "DesvPad_AR", "Mediana_AR", "Maximo_AR", "Minimo_AR")
+  ) %>%
+  cols_label(
+    Media_AR = "Média",
+    DesvPad_AR = "DesvPad",
+    Mediana_AR = "Mediana",
+    Maximo_AR = "Máximo",
+    Minimo_AR = "Mínimo"
+  ) %>%
+  cols_width(
+    c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR) ~ px(80)
+  ) %>%
+  fmt_number(
+    columns = c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR),
+    decimals = 6
+  )
 ```
 
-Fonte: Elaborado pelo autor
 
-Tabela indicando as principais estatísticas do método EDGE para o ano de 2020
-:::
+Para compreender melhor como os diferentes estimadores de spread bid-ask se comportam em condições de mercado distintas, realizamos uma análise comparativa entre três períodos: pré-pandemia (2018-2019), pandemia (2020) e pós-pandemia (2021-2022). Esta segmentação temporal permite avaliar o desempenho dos estimadores em cenários de normalidade relativa, extrema volatilidade e recuperação, respectivamente.
+
+Os dados na @tbl-estatscs20 apresentam os resultados do estimador CS nos três períodos analisados. Este método consistentemente mostra os valores médios de spread bid-ask mais baixos em comparação com os outros estimadores. No período pré-pandemia, o spread médio foi de 0,003874, com desvio padrão de 0,002920. Durante a pandemia, observa-se um aumento significativo para 0,005386 (incremento de 39,0%), com desvio padrão de 0,004826, evidenciando tanto um aumento no spread quanto uma maior dispersão nas estimativas. No período pós-pandemia, os valores apresentaram uma redução para 0,004464 (diminuição de 17,1% em relação ao período da pandemia), indicando uma recuperação parcial das condições de mercado, porém ainda acima dos níveis pré-pandemia.
 
 ::: {#tbl-estatscs20}
 ```{r}
-tabela_CS_2020
+tabela_CS_completa
 ```
 
 Fonte: Elaborado pelo autor
 
-Tabela indicando as principais estatísticas do método CS para o ano de 2020
+Tabela indicando as principais estatísticas do método CS para pré-pandemia, ano da pandemia (2020) e pós-pandemia
 :::
+
+Já o estimador EDGE, na @tbl-estatsedge20, apresenta valores intermediários entre os três métodos analisados, porém com maior sensibilidade às condições de mercado. No período pré-pandemia, o spread médio foi de 0,007509, com desvio padrão de 0,004545. Durante a pandemia, o EDGE registrou um aumento expressivo para 0,012225 (incremento de 62,8%), com desvio padrão mais que duplicado (0,010940), demonstrando sua maior capacidade de capturar a volatilidade e a redução de liquidez desse período. No pós-pandemia, o método estimou um spread médio de 0,008244, representando uma redução de 32,6% em relação ao período crítico, mas ainda 9,8% acima dos níveis pré-pandemia, sugerindo uma normalização incompleta das condições de mercado.
+
+::: {#tbl-estatsedge20}
+```{r}
+tabela_EDGE_completa
+```
+
+Fonte: Elaborado pelo autor
+
+Tabela indicando as principais estatísticas do método EDGE para pré-pandemia, ano da pandemia (2020) e pós-pandemia
+:::
+
+O estimador AR, na @tbl-estatsar20, consistentemente produziu as maiores estimativas de spread bid-ask nos três períodos analisados. No período pré-pandemia, o spread médio foi de 0,009903, com desvio padrão de 0,005820. Durante a pandemia, o AR registrou o maior valor médio entre todos os métodos, atingindo 0,016079 (aumento de 62,4%), com desvio padrão de 0,013420, refletindo sua alta sensibilidade às condições adversas de mercado. No período pós-pandemia, o spread médio reduziu para 0,011866 (queda de 26,2%), permanecendo 19,8% acima dos níveis pré-pandemia, o que sugere uma percepção mais conservadora deste método quanto à recuperação das condições de liquidez do mercado brasileiro.
 
 ::: {#tbl-estatsar20}
 ```{r}
-tabela_AR_2020
+tabela_AR_completa
 ```
 
 Fonte: Elaborado pelo autor
 
-Tabela indicando as principais estatísticas do método AR para o ano de 2020
+Tabela indicando as principais estatísticas do método AR para pré-pandemia, ano da pandemia (2020) e pós-pandemia
 :::
+
+A análise comparativa dos três estimadores ao longo dos diferentes períodos revela padrões consistentes e significativos sobre seu comportamento e sensibilidade às condições de mercado. Em primeiro lugar, observamos uma hierarquia clara nos valores estimados: o método CS sempre fornece as estimativas mais baixas, o AR as mais altas, e o EDGE ocupa uma posição intermediária. Esta ordenação se manteve inalterada nos três períodos analisados, sugerindo características estruturais inerentes a cada metodologia.
+
+Durante o período pré-pandemia, as diferenças entre os estimadores já eram evidentes, com o AR apresentando um spread médio 155,6% maior que o CS e o EDGE 93,8% maior. Estas diferenças substantivas indicam que, mesmo em condições normais de mercado, a escolha do estimador pode levar a conclusões significativamente distintas sobre os custos de transação no mercado brasileiro.
+
+A pandemia de COVID-19 em 2020 proporcionou um experimento natural para avaliar a sensibilidade dos estimadores às condições extremas de mercado. Todos os métodos registraram aumentos expressivos em suas estimativas, refletindo o choque de liquidez e a alta volatilidade do período. Contudo, é notável que o EDGE e o AR demonstraram incrementos proporcionalmente maiores (62,8% e 62,4%, respectivamente) em comparação ao CS (39,0%). Esta diferença na magnitude da resposta sugere que o CS pode subestimar os custos de transação em períodos de estresse de mercado, enquanto o EDGE e o AR capturam de forma mais completa o aumento dos spreads nessas condições.
+
+Igualmente reveladora foi a análise dos desvios padrão, que apresentaram aumentos substanciais durante a pandemia: 65,3% para o CS, 140,7% para o EDGE e 130,6% para o AR. O aumento mais pronunciado na dispersão das estimativas do EDGE e do AR indica maior sensibilidade destes métodos à heterogeneidade das condições de mercado entre diferentes ativos e momentos.
+
+No período pós-pandemia, todos os estimadores registraram reduções significativas em comparação ao auge da crise, sinalizando a gradual normalização das condições de mercado. No entanto, nenhum retornou completamente aos níveis pré-pandemia, sugerindo efeitos persistentes na liquidez e nos custos de transação. A magnitude da recuperação variou entre os métodos, com o EDGE mostrando a maior reversão (32,6% de redução), seguido pelo AR (26,2%) e pelo CS (17,1%).
+
+Esta análise temporal reforça as conclusões anteriores sobre as características de cada estimador. O CS, com suas premissas de negociação contínua, parece menos sensível às variações nas condições de mercado, o que pode ser vantajoso para análises de longo prazo, mas problemático para capturar choques de liquidez. O EDGE, com seu termo de correção para negociações infrequentes, demonstra maior adaptabilidade a diferentes contextos, enquanto o AR consistentemente produz estimativas mais conservadoras dos custos de transação.
+
+Os resultados sugerem que a escolha do estimador de spread bid-ask deve considerar não apenas o contexto geral do mercado, mas também os objetivos específicos da análise. Para avaliações em períodos de estresse ou em mercados com liquidez heterogênea, como o brasileiro, os estimadores EDGE e AR oferecem maior sensibilidade às variações nas condições de mercado. Em contrapartida, o CS pode ser adequado para análises comparativas de longo prazo em mercados mais estáveis.
+
+
 
 ```{r}
 # Função para calcular o RMSE
@@ -1005,11 +1186,11 @@ resultados_ks <- bind_rows(
 
 ```
 
-## Análise Comparativa com Dados de Referência da Bloomberg
+## Análise comparativa com dados de referência da Bloomberg
 
 Para avaliar a eficácia dos estimadores estudados em relação a uma referência de mercado amplamente reconhecida, realizou-se uma análise comparativa entre os spreads bid-ask estimados pelos métodos EDGE, CS e AR e os valores reportados pela Bloomberg. Esta comparação é fundamental para determinar qual metodologia oferece estimativas mais precisas no contexto específico do mercado brasileiro.
 
-### Teste de Similaridade Estatística
+### Teste de similaridade estatística
 
 O teste de Kolmogorov-Smirnov (KS) foi aplicado para verificar se as distribuições dos spreads estimados pelos três métodos são estatisticamente similares à distribuição dos valores de referência da Bloomberg. Este teste não paramétrico avalia a hipótese nula de que duas amostras provêm da mesma distribuição populacional.
 
@@ -1054,9 +1235,9 @@ Fonte: Elaborado pelo autor
 Tabela indicando o resultado do teste de Kolmogorov-Smirnov para cada metodologia de estimativa de spread bid-ask
 :::
 
-Conforme a tabela @tbl-tabelakolmogorov, os resultados do teste KS revelaram p-valores iguais a zero e estatísticas D próximas a 1 para todas as três metodologias, indicando uma rejeição contundente da hipótese nula. Isso evidencia que as distribuições dos spreads estimados por CS, AR e EDGE são estatisticamente diferentes da distribuição dos spreads de referência da Bloomberg. Estas diferenças não são meramente aleatórias, mas refletem divergências sistemáticas nas estimativas. Este resultado sugere que os três métodos provavelmente capturam diferentes aspectos dos spreads ou possuem vieses estruturais distintos em relação aos valores de referência. A rejeição da hipótese nula para todos os estimadores indica a complexidade inerente à mensuração do spread bid-ask em mercados emergentes, onde fatores específicos podem não ser adequadamente capturados pelos modelos desenvolvidos originalmente para mercados mais líquidos e eficientes.
+Conforme a @tbl-tabelakolmogorov, os resultados do teste KS revelaram p-valores iguais a zero e estatísticas D próximas a 1 para todas as três metodologias, indicando uma rejeição contundente da hipótese nula. Isso evidencia que as distribuições dos spreads estimados por CS, AR e EDGE são estatisticamente diferentes da distribuição dos spreads de referência da Bloomberg. Estas diferenças não são meramente aleatórias, mas refletem divergências sistemáticas nas estimativas. Este resultado sugere que os três métodos provavelmente capturam diferentes aspectos dos spreads ou possuem vieses estruturais distintos em relação aos valores de referência. A rejeição da hipótese nula para todos os estimadores indica a complexidade inerente à mensuração do spread bid-ask em mercados emergentes, onde fatores específicos podem não ser adequadamente capturados pelos modelos desenvolvidos originalmente para mercados mais líquidos e eficientes.
 
-### Métricas de Erro
+### Métricas de erro
 
 Para quantificar a precisão das estimativas em relação aos valores de referência, foram calculadas duas métricas de erro: o Erro Quadrático Médio (RMSE) e o Erro Absoluto Médio (MAE). Estas métricas permitem uma avaliação objetiva da magnitude das diferenças entre os valores estimados e os valores de referência. Os resultados das métricas de erro revelaram diferenças significativas entre as metodologias:
 
@@ -1064,53 +1245,45 @@ O estimador EDGE apresentou desempenho superior, com RMSE de 0,9658148 e MAE de 
 
 Estes resultados indicam que, embora nenhuma das metodologias reproduza perfeitamente a distribuição dos spreads Bloomberg (conforme indicado pelo teste KS), o estimador EDGE consegue gerar aproximações pontuais consideravelmente mais precisas. O erro quadrático médio do EDGE é aproximadamente 65% menor que o dos outros estimadores, o que representa uma vantagem significativa em termos de precisão.
 
-### Interpretação Integrada
+### Interpretação integrada
 
-A análise integrada dos resultados do teste KS e das métricas de erro permite uma compreensão mais completa do desempenho relativo dos estimadores no contexto do mercado brasileiro. Apesar de todas as metodologias produzirem distribuições estatisticamente diferentes dos valores de referência, o EDGE demonstrou capacidade superior para aproximar-se dos valores individuais, o que é evidenciado por seu menor RMSE e MAE. Essa característica é particularmente relevante em aplicações práticas, onde a precisão pontual das estimativas é frequentemente mais importante que a reprodução exata da distribuição completa. A superioridade do EDGE pode ser atribuída à sua abordagem mais abrangente, que incorpora informações dos preços de abertura, máxima, mínima e fechamento, conforme descrito por Ardia, Guidotti e Kroencke (2024). Além disso, o EDGE inclui um termo de correção analítico para a negociação infrequente, característica comum em mercados menos líquidos como o brasileiro. Por outro lado, o desempenho similar dos estimadores CS e AR em termos de métricas de erro, apesar de suas diferentes formulações matemáticas, sugere que ambos podem estar sujeitos a limitações semelhantes quando aplicados ao mercado brasileiro. Isso pode estar relacionado a pressupostos subjacentes a esses modelos que não se aplicam plenamente ao contexto de mercados emergentes.
+A análise integrada dos resultados do teste KS e das métricas de erro permite uma compreensão mais completa do desempenho relativo dos estimadores no contexto do mercado brasileiro. Apesar de todas as metodologias produzirem distribuições estatisticamente diferentes dos valores de referência, o EDGE demonstrou capacidade superior para aproximar-se dos valores individuais, o que é evidenciado por seu menor RMSE e MAE. Essa característica é particularmente relevante em aplicações práticas, onde a precisão pontual das estimativas é frequentemente mais importante que a reprodução exata da distribuição completa. 
 
-### Implicações para o Mercado Brasileiro
+A superioridade do EDGE pode ser atribuída à sua abordagem mais abrangente, que incorpora informações dos preços de abertura, máxima, mínima e fechamento, conforme descrito por Ardia, Guidotti e Kroencke (2024). Além disso, o EDGE inclui um termo de correção analítico para a negociação infrequente, característica comum em mercados menos líquidos como o brasileiro. Por outro lado, o desempenho similar dos estimadores CS e AR em termos de métricas de erro, apesar de suas diferentes formulações matemáticas, sugere que ambos podem estar sujeitos a limitações semelhantes quando aplicados ao mercado brasileiro. Isso pode estar relacionado a pressupostos subjacentes a esses modelos que não se aplicam plenamente ao contexto de mercados emergentes.
+
+### Implicações para o mercado brasileiro
 
 Os resultados desta análise comparativa têm implicações significativas para a escolha de metodologias de estimativa do spread bid-ask no mercado brasileiro:
 
-O estimador EDGE emerge como a opção mais adequada para aplicações práticas, oferecendo estimativas com erro médio absoluto de aproximadamente 0,33 pontos base em relação aos valores de referência da Bloomberg. O fato de todas as metodologias produzirem distribuições estatisticamente diferentes da Bloomberg sugere que fatores específicos do mercado brasileiro, como a concentração de liquidez em determinados ativos e períodos, podem não estar sendo adequadamente capturados pelos modelos existentes. Estes achados corroboram a literatura que sugere que o EDGE é mais robusto em cenários de baixa liquidez e mercados emergentes, como mencionado no referencial teórico.
+O estimador EDGE emerge como a opção mais adequada para aplicações práticas, oferecendo estimativas com erro médio absoluto de aproximadamente 0,33 pontos base em relação aos valores de referência da Bloomberg. O fato de todas as metodologias produzirem distribuições estatisticamente diferentes da Bloomberg sugere que fatores específicos do mercado brasileiro, como a concentração de liquidez em determinados ativos e períodos, podem não estar sendo adequadamente capturados pelos modelos existentes. Estes achados corroboram os achados de Ardia, Guidotti e Kroencke (2024) que sugere que o EDGE é mais robusto em cenários de baixa liquidez e mercados emergentes, como mencionado no referencial teórico.
 
-Em suma, enquanto nenhuma das metodologias analisadas reproduz perfeitamente os valores de referência da Bloomberg, o estimador EDGE oferece uma alternativa significativamente mais precisa quando os dados de alta frequência não estão disponíveis. Esta conclusão é particularmente relevante para pesquisadores, investidores e reguladores interessados na microestrutura do mercado brasileiro e em seus custos de transação.
-
-\newpage
-
-# Limitações e próximos passos
-
-Embora este estudo tenha aplicado metodologias consolidadas internacionalmente para estimar o spread bid-ask no mercado de ações brasileiro, é importante reconhecer que a replicação dessas técnicas pode não capturar integralmente as particularidades do mercado nacional. O mercado brasileiro possui características únicas em termos de estrutura de negociação, liquidez, regulação e comportamento dos investidores, que podem influenciar a eficácia e a precisão dos estimadores utilizados.
-
-Um dos aspectos limitadores é que os modelos desenvolvidos por Corwin e Schultz (2012) e por Abdi e Ranaldo (2017) foram originalmente calibrados e testados em mercados desenvolvidos, como o norte-americano e o europeu, respectivamente. Essas economias apresentam maior liquidez, volumes de negociação mais elevados e uma estrutura de mercado distinta daquela observada no Brasil. Consequentemente, os pressupostos subjacentes a esses modelos, como a hipótese de negociação contínua ou a homogeneidade dos participantes do mercado, podem não se aplicar da mesma forma no contexto brasileiro, onde a liquidez é frequentemente concentrada em um número menor de ativos e existem períodos de baixa atividade.
-
-Adicionalmente, os estimadores baseados em dados de baixa frequência, como os utilizados neste trabalho, podem ser sensíveis a eventos específicos do mercado brasileiro, tais como intervenções regulatórias, volatilidade cambial e impacto de investidores institucionais domésticos. Essas peculiaridades podem introduzir vieses nas estimativas do spread bid-ask, comprometendo a acurácia dos resultados e a validade das conclusões. Por exemplo, a presença de negociações infrequentes ou gaps nos preços pode afetar a performance dos estimadores que assumem certa regularidade nas transações.
-
-No que se refere aos trabalhos de Abdi e Ranaldo (2017) e de Ardia, Guidotti e Kroencke (2024), apesar de apresentarem metodologias robustas para a estimativa do spread bid-ask, suas abordagens podem não considerar fatores específicos presentes no mercado brasileiro. Questões como a estrutura de formação de preços na B3, a concentração de liquidez em determinados horários do pregão e a influência de notícias locais podem impactar a dinâmica dos spreads de maneira diferente do que ocorre em mercados estrangeiros. Além disso, possíveis restrições de acesso a dados granulares no Brasil podem limitar a aplicação direta dos métodos propostos nesses estudos.
-
-Quanto aos próximos passos incluem a implementação prática dos modelos de estimativa do spread bid-ask utilizando dados do mercado brasileiro. A análise comparativa dos métodos será refinada, com a aplicação de técnicas adicionais de validação estatística. Além disso, o trabalho focará na elaboração do manuscrito final da dissertação, incorporando discussões aprofundadas sobre os resultados obtidos. Por fim, serão realizados ajustes necessários para atender aos requisitos da banca e incluir potenciais contribuições adicionais levantadas durante a qualificação.
+Em suma, enquanto nenhuma das metodologias analisadas reproduz perfeitamente os valores de referência da Bloomberg, o estimador EDGE oferece uma alternativa mais precisa quando os dados de alta frequência não estão disponíveis. Esta conclusão é particularmente relevante para pesquisadores, investidores e reguladores interessados na microestrutura do mercado brasileiro e em seus custos de transação.
 
 \newpage
+
 
 # Conclusão
+Este estudo teve como objetivo geral comparar, no mercado acionário brasileiro, estimativas de spread bid-ask obtidas pelas abordagens de Corwin & Schultz (2012), Abdi & Ranaldo (2017) e EDGE (Ardia, Guidotti & Kroencke, 2024), tendo como referência a cotação de spread divulgada pela Bloomberg. A pesquisa desenvolveu-se a partir do reconhecimento da importância fundamental do spread bid-ask como componente da microestrutura de mercado, representando a diferença entre os preços de compra (bid) e venda (ask) de um ativo, refletindo assim os custos de transação e a liquidez do mercado.
 
-Este estudo investigou o impacto do spread bid-ask na formação de preços de ativos financeiros, com ênfase no mercado de ações brasileiro. A partir da Revisão de Literatura, foi possível identificar que o spread bid-ask é um componente essencial na microestrutura de mercado, influenciando diretamente a liquidez, os custos de transação e a eficiência dos mercados financeiros. Trabalhos clássicos, como os de Demsetz (1968) e Roll (1984), evidenciaram a relevância dos custos de transação e desenvolveram metodologias para a estimativa do spread. Estudos mais recentes, como os de Corwin e Schultz (2012), Abdi e Ranaldo (2017) e Ardia, Guidotti e Kroencke (2024), propuseram estimadores de baixa frequência que buscam aprimorar a precisão das estimativas em diferentes contextos de mercado.
+A amostra utilizada foi composta por 138 ações listadas na B3, selecionadas com base em critérios de liquidez, onde foram consideradas apenas ações com índice de liquidez superior a 0,1, calculado em uma janela de seis meses. As ações foram distribuídas entre diferentes segmentos de governança corporativa: 96 pertencentes ao Novo Mercado, 16 ao Nível 2, 18 ao Nível 1 e 4 ao segmento Tradicional.
 
-Nos resultados preliminares, aplicaram-se os estimadores de Corwin e Schultz (CS), Abdi e Ranaldo (AR) e o EDGE ao mercado de ações brasileiro, considerando um período abrangente de 2017 a 2023, bem como o ano específico de 2020, marcado por alta volatilidade decorrente da pandemia de COVID-19. As análises revelaram que o estimador CS tende a subestimar o spread bid-ask, especialmente em ativos com menor liquidez, muitas vezes retornando valores nulos devido à suposição de negociação contínua que não se sustenta em mercados com baixa frequência de transações. Em contrapartida, os estimadores EDGE e AR demonstraram maior robustez, capturando de forma mais eficaz os custos de transação e refletindo adequadamente as condições de volatilidade e liquidez do mercado brasileiro.
+Metodologicamente, o estudo aplicou os três estimadores selecionados aos dados de preços diários (abertura, máxima, mínima, fechamento) e volumes obtidos diretamente da B3, utilizando uma janela móvel de 21 dias para garantir consistência com estudos anteriores. As estimativas foram comparadas com valores de referência da Bloomberg através do teste de Kolmogorov-Smirnov e métricas de erro como RMSE e MAE.
 
-Os dados mostraram que, durante o ano de 2020, houve um aumento significativo nos spreads bid-ask estimados por todos os métodos, evidenciando o impacto da volatilidade extrema nos custos de transação e na liquidez do mercado. O estimador AR apresentou os maiores valores médios de spread bid-ask, sugerindo que este método pode ser mais sensível às condições de mercado adversas. O EDGE também se mostrou sensível, e ao mesmo tempo mantendo estimativas não viesadas graças ao termo de correção analítico que considera a negociação infrequente.
+Os resultados do teste de Kolmogorov-Smirnov indicaram que as distribuições dos spreads estimados por todos os três métodos são estatisticamente diferentes da distribuição dos valores da Bloomberg, o que sugere que nenhum dos estimadores reproduz perfeitamente a complexidade do spread bid-ask no mercado brasileiro. Esta constatação aponta para a existência de características específicas deste mercado emergente que podem não estar sendo adequadamente capturadas pelos modelos desenvolvidos originalmente para mercados mais líquidos e eficientes.
 
-A comparação entre os estimadores destacou a importância de selecionar metodologias adequadas ao perfil de liquidez dos ativos e às condições específicas do mercado. Enquanto o CS pode ser apropriado para mercados altamente líquidos e com negociação contínua, o EDGE e o AR emergem como ferramentas mais apropriadas para mercados emergentes ou em condições de baixa liquidez, como é o caso do mercado brasileiro. A capacidade destes estimadores de capturar aumentos nos spreads durante períodos de alta volatilidade é crucial para a compreensão da dinâmica do mercado e para a tomada de decisões informadas por parte dos investidores e reguladores.
+A pesquisa se baseou principalmente nos trabalhos seminais dos autores dos próprios estimadores: Corwin e Schultz (2012), que propuseram uma metodologia baseada em preços diários de máxima e mínima; Abdi e Ranaldo (2017), que expandiram essa abordagem incluindo preços de fechamento; e Ardia, Guidotti e Kroencke (2024), que desenvolveram o estimador EDGE incorporando informações adicionais dos preços de abertura.
 
-Como próximas etapas, pretende-se aprofundar a análise comparativa dos estimadores incorporando dados de alta frequência obtidos da Bloomberg. Essa integração permitirá validar e calibrar os estimadores de baixa frequência utilizados neste estudo, confrontando-os com valores de referência derivados de dados intradiários. A utilização de dados de alta frequência possibilitará uma avaliação mais precisa dos spreads efetivos, permitindo analisar a acurácia dos estimadores em diferentes horizontes temporais e condições de mercado. Além disso, esta abordagem contribuirá para a identificação de possíveis ajustes ou melhorias nos métodos existentes, adaptando-os ainda mais à realidade do mercado brasileiro.
+Os principais resultados demonstraram que, embora nenhum dos estimadores reproduza perfeitamente a distribuição dos spreads Bloomberg (conforme indicado pelo teste KS), o estimador EDGE apresentou desempenho significativamente superior, com RMSE de 0,9658148 e MAE de 0,3256090, valores aproximadamente 65% menores que os dos estimadores CS e AR. Durante o período de alta volatilidade de 2020, todos os estimadores registraram aumento nas médias dos spreads, com EDGE e AR demonstrando maior sensibilidade às condições adversas de mercado.
 
-Em suma, este trabalho reforça a relevância do spread bid-ask como elemento fundamental na formação de preços de ativos financeiros e evidencia a necessidade de metodologias robustas para sua estimativa, especialmente em mercados emergentes. A análise dos estimadores CS, EDGE e AR contribui para a literatura de microestrutura ao destacar suas vantagens e limitações em diferentes contextos. A continuidade da pesquisa, com a incorporação de dados de alta frequência, permitirá um entendimento mais profundo da dinâmica dos spreads bid-ask, oferecendo insights valiosos para investidores, acadêmicos e formuladores de políticas econômicas.
+Esta pesquisa contribui para a literatura ao fornecer evidências sobre a eficácia relativa de diferentes metodologias de estimação do spread bid-ask especificamente no contexto de um mercado emergente como o brasileiro. Para estudos futuros, os resultados oferecem uma base para o desenvolvimento de estimadores mais adaptados às especificidades dos mercados emergentes, que tipicamente apresentam menor liquidez e maior volatilidade. A identificação do EDGE como estimador mais preciso também fornece orientação metodológica para pesquisadores interessados em mensurar custos de transação no mercado brasileiro.
+
+Entre as limitações do estudo, destaca-se que os modelos foram originalmente calibrados e testados em mercados desenvolvidos, com estruturas distintas do brasileiro. Os pressupostos subjacentes a esses modelos, como a hipótese de negociação contínua, podem não se aplicar adequadamente ao contexto brasileiro, especialmente em ativos com menor liquidez. Adicionalmente, particularidades estruturais do mercado brasileiro, como a dinâmica da formação de preços na B3 e a concentração de liquidez em determinados horários, podem não ser completamente capturadas pelos modelos analisados.
+
 
 \newpage
 
-# Cronograma da Dissertação (Atualizado)
 
-```{r}
+```{r, include = FALSE}
 # Instalar pacotes necessários, se ainda não tiver
 if (!requireNamespace("knitr", quietly = TRUE)) install.packages("knitr")
 
@@ -1157,8 +1330,6 @@ kable(dados_cronograma, format = "latex", booktabs = FALSE, linesep = "") %>%
   ) %>%
   row_spec(c(1,2,3,4,5,6,7,8,9,10,11), hline_after = TRUE)  # Adiciona linhas horizontais após as linhas 2, 4 e 6
 ```
-
-\newpage
 
 # Referências
 
