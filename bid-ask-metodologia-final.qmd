@@ -637,10 +637,10 @@ company_spreads_df <- company_spreads_df %>%
   mutate(Group = case_when(
     Company_Code %in% high_volume ~ "Ativos mais líquidos",
     Company_Code %in% low_volume ~ "Ativos menos líquidos",
-    TRUE ~ "Todos"
+    TRUE ~ "Liquidez média"
   ))
 
-# Calcular as estatísticas para cada grupo e método com 4 casas decimais
+# Calcular as estatísticas para cada grupo e método
 stats_table <- company_spreads_df %>%
   group_by(Group) %>%
   summarise(
@@ -664,8 +664,8 @@ stats_table <- company_spreads_df %>%
 
 # Atribuir os grupos na ordem desejada
 stats_table$Group <- factor(stats_table$Group,
-                            levels = c("Ativos mais líquidos",
-                                       "Ativos menos líquidos",
+                            levels = c("Ativos mais líquidos", 
+                                       "Ativos menos líquidos", 
                                        "Todos"))
 
 stats_table <- stats_table %>% arrange(Group)
@@ -748,7 +748,7 @@ tabela_AR <- stats_table_AR %>%
 
 ```
 
-Como visto na @tbl-estatsedge, com as estatística do EDGE, na @tbl-estatscs, com as estatísticas do CS, e na @tbl-estatsar, com as estatísticas do AR, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de $2.2 \times 10^{-5}$ para ativos mais líquidos e $1,6 \times 10^{-5}$ para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia, Guidotti e Kroencke (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações.
+Como visto na @tbl-estatsedge, com as estatística do EDGE, na @tbl-estatscs, com as estatísticas do CS, e na @tbl-estatsar, com as estatísticas do AR, ao analisar os resultados obtidos, observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de $2,2 \times 10^{-5}$ para ativos mais líquidos e $1,6 \times 10^{-5}$ para ativos menos líquidos. Em contraste, o estimador CS retornou valores iguais a zero para ambos os grupos de ativos. Esses achados estão em consonância com o exposto por Ardia, Guidotti e Kroencke (2024), que investigaram o desempenho de diferentes estimadores de spread bid-ask.
 
 ::: {#tbl-estatsedge}
 ```{r}
