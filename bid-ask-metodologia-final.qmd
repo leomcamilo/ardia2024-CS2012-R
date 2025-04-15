@@ -423,15 +423,15 @@ O spread bid-ask é uma medida fundamental na microestrutura de mercado, represe
 
 No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros instrumentos financeiros. A bolsa tem se destacado por sua infraestrutura tecnológica avançada e por iniciativas voltadas à inclusão financeira e ao aumento da liquidez do mercado. No entanto, os mercados emergentes, como o brasileiro, ainda enfrentam desafios significativos, incluindo menor liquidez e maior volatilidade em comparação com mercados desenvolvidos.
 
-A literatura sobre spread bid-ask tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas metodologias a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas metodologias se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
+A literatura sobre spread bid-ask tem evoluído significativamente ao longo das últimas décadas, com diversos métodos sendo desenvolvidos para sua estimativa. Métodos tradicionais, como o estimador de Roll (1984), foram complementados por abordagens mais recentes, como os estimadores de Corwin e Schultz (2012) e de Abdi e Ranaldo (2017). Apesar desses avanços, há uma lacuna notável na aplicação dessas técnicas a mercados emergentes. A maioria dos estudos concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas abordagens se comportam em contextos de menor liquidez e maior volatilidade, como o mercado brasileiro.
 
 ### Relevância e justificativa
 
 Medir o spread bid-ask é de extrema relevância para diversos stakeholders no mercado financeiro. Corwin (2012) destaca que, para os investidores, o spread bid-ask é um indicador direto dos custos de transação e da liquidez do mercado, influenciando decisões de compra e venda de ativos. Reguladores utilizam essa medida para monitorar a eficiência do mercado e identificar possíveis práticas de manipulação de preços. Acadêmicos, por sua vez, empregam o spread bid-ask como uma variável chave em estudos sobre microestrutura de mercado, eficiência de preços e assimetria informacional.
 
-Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de metodologias de estimativa do spread bid-ask aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes metodologias nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
+Este trabalho busca preencher lacunas importantes na literatura ao realizar uma análise comparativa de métodos de estimativa do spread bid-ask aplicadas ao mercado brasileiro. Ripamonti (2016) observa que a ausência de estudos que comparam diferentes técnicas nesse contexto específico representa uma oportunidade para contribuir com novos insights sobre a eficiência e a liquidez do mercado brasileiro. Os resultados deste estudo podem auxiliar investidores na seleção de ações e na avaliação de riscos de liquidez, fornecendo uma base mais sólida para suas decisões de investimento.
 
-A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do spread bid-ask. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes
+A escolha do mercado brasileiro se justifica por suas características únicas como mercado emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para testar a robustez das metodologias de estimativa do spread bid-ask. Além disso, Ripamonti (2016) sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este trabalho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para investidores e reguladores no contexto de mercados emergentes.
 
 \newpage
 
@@ -487,7 +487,7 @@ Em suma, a presença de formadores de mercado em ações na B3 visa principalmen
 
 A mensuração do spread bid-ask pode ser realizada por meio de dados de alta frequência, que registram de forma contínua as cotações e negociações ao longo do dia, ou através de dados de baixa frequência, os quais utilizam informações agregadas, como os preços de fechamento, máxima e mínima diários. Em contextos onde os dados de alta frequência são escassos ou de difícil acesso, os métodos de estimação baseados em dados agregados tornam-se fundamentais para a avaliação dos custos de transação e da liquidez dos ativos.
 
-Para fundamentar este trabalho, foi realizada uma Revisão Narrativa de Literatura (RNL) durante a etapa de qualificação desta dissertação, a qual permitiu identificar as metodologias mais relevantes e inovadoras no campo da estimação do spread bid-ask. A partir dessa revisão, foram selecionadas três metodologias de estimação de baixa frequência que vêm contribuindo de maneira significativa para aprimorar a medição do spread bid-ask e que apresentam potencial aplicabilidade ao mercado brasileiro.
+Para fundamentar este trabalho, foi realizada uma Revisão Narrativa de Literatura (RNL) durante a etapa de qualificação desta dissertação, a qual permitiu identificar os métodos mais relevantes e inovadoras no campo da estimação do spread bid-ask. A partir dessa revisão, foram selecionadas três técnicas de estimação de baixa frequência que vêm contribuindo de maneira significativa para aprimorar a medição do spread bid-ask e que apresentam potencial aplicabilidade ao mercado brasileiro.
 
 A abordagem de Corwin e Schultz (2012) introduz uma forma simplificada de inferir o spread a partir das oscilações diárias, enquanto a proposta de Abdi e Ranaldo (2017) aprimora esse método ao reduzir incertezas inerentes às estimativas com dados diários. Por fim, a metodologia de Ardia, Guidotti e Kroencke (2024) integra informações adicionais, como o preço de abertura, proporcionando uma estimativa mais robusta e precisa.
 
@@ -497,17 +497,17 @@ Abdi e Ranaldo (2017) expandiram essa metodologia ao incluir informações do pr
 
 Mais recentemente, Ardia, Guidotti e Kroencke (2024) propuseram um modelo ainda mais abrangente, que incorpora informações dos preços de abertura, máxima, mínima e fechamento. Diferentemente dos modelos anteriores, que ignoram o preço de abertura, essa nova abordagem busca reduzir vieses na estimação ao aproveitar um conjunto mais completo de informações de preços. Além disso, os autores desenvolveram um estimador eficiente que minimiza a variância da estimativa, tornando-se uma alternativa superior para mensurar spreads em mercados com diferentes níveis de liquidez. O modelo de Ardia et al. (2024) representa um avanço na literatura ao abordar problemas de viés e eficiência estatística na estimação do spread bid-ask​
 
-Dessa forma, a evolução das metodologias de estimação do spread bid-ask reflete a necessidade de desenvolver modelos que equilibrem simplicidade e precisão, especialmente em mercados onde dados de alta frequência não estão disponíveis. A aplicação desses modelos ao mercado brasileiro permite uma avaliação mais detalhada da liquidez dos ativos e dos custos de transação, contribuindo para uma melhor compreensão das dinâmicas de precificação no mercado acionário nacional. Além disso, tais estimadores são fundamentais para o desenvolvimento de programas computacionais que viabilizem a estimação contínua do spread bid-ask, permitindo uma análise mais eficiente do comportamento do mercado.
+Dessa forma, a evolução dos métodos de estimação do spread bid-ask reflete a necessidade de desenvolver modelos que equilibrem simplicidade e precisão, especialmente em mercados onde dados de alta frequência não estão disponíveis. A aplicação desses modelos ao mercado brasileiro permite uma avaliação mais detalhada da liquidez dos ativos e dos custos de transação, contribuindo para uma melhor compreensão das dinâmicas de precificação no mercado acionário nacional. Além disso, tais estimadores são fundamentais para o desenvolvimento de programas computacionais que viabilizem a estimação contínua do spread bid-ask, permitindo uma análise mais eficiente do comportamento do mercado.
 
 \newpage
 
 # Metodologia
 
-A metodologia deste estudo foi desenvolvida para permitir uma análise rigorosa e comparativa das diferentes metodologias de estimativa do spread bid-ask no mercado de ações brasileiro. A seguir, são detalhadas as etapas e procedimentos adotados para a coleta e análise dos dados, bem como a aplicação das metodologias selecionadas.
+Este estudo foi desenvolvido para permitir uma análise rigorosa e comparativa das diferentes metodologias de estimativa do spread bid-ask no mercado de ações brasileiro. A seguir, são detalhadas as etapas e procedimentos adotados para a coleta e análise dos dados, bem como a aplicação das metodologias selecionadas.
 
 ## Amostra
 
-A base de dados deste estudo foi composta a partir das informações de preços diários das ações listadas na B3, aplicando critérios rigorosos de seleção para garantir a representatividade e a qualidade dos dados utilizados. O critério principal para inclusão das ações na amostra foi o índice de liquidez, calculado conforme a metodologia descrita por Andrade et al. (2009). Foram consideradas apenas as ações com índice de liquidez superior a 0,1, calculado com base em uma janela de seis meses de dados, assegurando a representatividade de ativos com maior frequência de negociação.
+A base de dados deste estudo foi composta a partir das informações de preços diários das ações listadas na B3, aplicando critérios rigorosos de seleção para garantir a representatividade e a qualidade dos dados utilizados. O critério principal para inclusão das ações na amostra foi o índice de liquidez, calculado conforme o método descrita por Andrade et al. (2009). Foram consideradas apenas as ações com índice de liquidez superior a 0,1, calculado com base em uma janela de seis meses de dados, assegurando a representatividade de ativos com maior frequência de negociação.
 
 A amostra final é composta por 138 ações, distribuídas entre os diferentes segmentos de governança corporativa da B3. Entre elas, 96 pertencem ao Novo Mercado, 16 ao Nível 2, 18 ao Nível 1 e 4 ao segmento Tradicional. Essa segmentação reflete distintos níveis de práticas de governança corporativa, permitindo uma análise abrangente sobre como essas características impactam os spreads bid-ask e a liquidez dos ativos.
 
@@ -517,7 +517,7 @@ O processo de filtragem das ações visou garantir a robustez dos dados utilizad
 
 ## Modelos econométricos
 
-Este estudo aplicou três metodologias amplamente reconhecidas para a estimativa do spread bid-ask: CS, AR e EDGE utilizando dados obtidos diretamente da B3. Essas abordagens foram selecionadas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer insights em diferentes contextos de mercado.
+Este estudo aplicou três métodos amplamente reconhecidos para a estimativa do spread bid-ask: CS, AR e EDGE utilizando dados obtidos diretamente da B3. Essas abordagens foram selecionadas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer insights em diferentes contextos de mercado.
 
 O estimador de spread bid-ask desenvolvido por Corwin e Schultz (2012) utiliza os preços diários de máxima e mínima das ações para calcular o spread de forma simples e eficiente. A metodologia parte de duas premissas principais. Primeiramente, assume-se que os preços máximos tendem a ser resultados de ordens de compra, enquanto os mínimos são influenciados por ordens de venda. Dessa forma, a relação entre os preços de máxima e mínima reflete tanto a volatilidade fundamental do ativo quanto os custos associados ao spread bid-ask. Em segundo lugar, considera-se que a componente de volatilidade aumenta proporcionalmente com o intervalo de negociação, enquanto a parte do spread permanece constante.
 
@@ -539,11 +539,11 @@ onde $H_{t,t+1} = \max(H_t, H_{t+1})$ e $L_{t,t+1} = \min(L_t, L_{t+1})$. Nesse 
 
 A partir dessas definições, torna-se evidente que o método permite isolar o impacto do spread bid-ask dos movimentos puramente voláteis do preço. A implementação do estimador é direta, dispensando iterações complexas, o que facilita sua aplicação prática em grandes conjuntos de dados. Corwin e Schultz (2012) validaram o estimador por meio de simulações que replicaram condições realistas de mercado, demonstrando que a correlação entre os valores estimados pelo método e os spreads reais é elevada, em torno de 0,9. Em comparação com o estimador de covariância de Roll (1984), o desvio padrão das estimativas de Corwin e Schultz é cerca de metade, indicando maior estabilidade nos resultados.
 
-O método foi aplicado a ações de 11 países, incluindo o Brasil, evidenciando sua eficácia em medir os custos de transação em diferentes contextos de liquidez e volatilidade. Essa metodologia tem sido amplamente utilizada em estudos sobre microestrutura de mercado. Por exemplo, foi empregada para analisar a relação entre a qualidade das informações financeiras e a assimetria informacional, com resultados que destacaram sua eficiência em comparação a outros indicadores. Embora algumas pesquisas apontem limitações no uso do método como medida de liquidez para prever retornos, ele continua sendo uma ferramenta confiável para estimar custos de transação e compreender a dinâmica dos mercados financeiros.
+O método foi aplicado a ações de 11 países, incluindo o Brasil, evidenciando sua eficácia em medir os custos de transação em diferentes contextos de liquidez e volatilidade. Essa técnica tem sido amplamente utilizada em estudos sobre microestrutura de mercado. Por exemplo, foi empregada para analisar a relação entre a qualidade das informações financeiras e a assimetria informacional, com resultados que destacaram sua eficiência em comparação a outros indicadores. Embora algumas pesquisas apontem limitações no uso do método como medida de liquidez para prever retornos, ele continua sendo uma ferramenta confiável para estimar custos de transação e compreender a dinâmica dos mercados financeiros.
 
 Portanto, o estimador de Corwin e Schultz (2012) oferece uma solução prática e robusta para mensurar o spread bid-ask com base em dados diários, sendo amplamente adotado em estudos de microestrutura, especialmente em mercados onde dados intradiários são limitados. Sua simplicidade e eficácia tornam-no uma ferramenta valiosa para analisar a liquidez e a eficiência do mercado financeiro brasileiro.
 
-Já o estimador de Abdi e Ranaldo (2017) trouxe uma metodologia nova para o cálculo do spread, sendo desenvolvida para estimar o spread bid-ask utilizando preços diários de fechamento, máxima e mínima das ações. A abordagem se baseia na decomposição do spread em componentes de volatilidade e custos de transação, permitindo uma análise detalhada dos fatores que influenciam a formação de preços nos mercados financeiros. Esse estimador é fundamentado em três etapas principais. Primeiro, utiliza-se o preço médio entre a máxima e a mínima (mid-range) como um proxy para o preço eficiente, que é definido como $MR_t = \frac{H_t + L_t}{2}$, supondo que o spread bid-ask se cancela nesse cálculo. Em seguida, calcula-se a distância quadrática entre o preço de fechamento e o proxy de preço eficiente derivado da média das médias de dois dias consecutivos, com essa distância sendo representada como: $D_t = \left(C_t - MR_t\right)^2$. Por fim, essa distância é ajustada para remover a variância do preço eficiente, $\sigma^2_D,$ isolando assim o componente relacionado ao spread bid-ask. Essa abordagem, além de simplificar cálculos, não requer ajustes *ad hoc* para períodos sem negociação, como finais de semana e feriados, o que a torna menos suscetível a viéses comuns em outros modelos.
+Já o estimador de Abdi e Ranaldo (2017) trouxe uma abordagem nova para o cálculo do spread, sendo desenvolvida para estimar o spread bid-ask utilizando preços diários de fechamento, máxima e mínima das ações. A abordagem se baseia na decomposição do spread em componentes de volatilidade e custos de transação, permitindo uma análise detalhada dos fatores que influenciam a formação de preços nos mercados financeiros. Esse estimador é fundamentado em três etapas principais. Primeiro, utiliza-se o preço médio entre a máxima e a mínima (mid-range) como um proxy para o preço eficiente, que é definido como $MR_t = \frac{H_t + L_t}{2}$, supondo que o spread bid-ask se cancela nesse cálculo. Em seguida, calcula-se a distância quadrática entre o preço de fechamento e o proxy de preço eficiente derivado da média das médias de dois dias consecutivos, com essa distância sendo representada como: $D_t = \left(C_t - MR_t\right)^2$. Por fim, essa distância é ajustada para remover a variância do preço eficiente, $\sigma^2_D,$ isolando assim o componente relacionado ao spread bid-ask. Essa abordagem, além de simplificar cálculos, não requer ajustes *ad hoc* para períodos sem negociação, como finais de semana e feriados, o que a torna menos suscetível a viéses comuns em outros modelos.
 
 No final, a fórmula do estimador é dada por:
 
@@ -597,15 +597,15 @@ Além disso, no estudo de Ardia, Guidotti e Kroencke (2024), a aplicação do es
 
 Essa escolha também facilita a análise do impacto de diferentes frequências de negociação, uma vez que uma janela de 21 dias captura tanto oscilações diárias quanto tendências mais amplas em cenários de alta e baixa liquidez. Portanto, a adoção desse parâmetro não só mantém a consistência com a literatura, mas também reflete práticas amplamente aceitas no campo de microestrutura de mercado, garantindo a robustez e a validade dos resultados obtidos no contexto do mercado brasileiro.
 
-O cálculo foi realizado sobre as séries de preços de abertura, máxima, mínima, fechamento (OHLC) e volumes diários obtidos diretamente da B3. As metodologias foram aplicadas sem modificações adicionais, seguindo rigorosamente os algoritmos descritos nos trabalhos originais, de forma a garantir a comparabilidade com os benchmarks teóricos.
+O cálculo foi realizado sobre as séries de preços de abertura, máxima, mínima, fechamento (OHLC) e volumes diários obtidos diretamente da B3. Os métodos foram aplicados sem modificações adicionais, seguindo rigorosamente os algoritmos descritos nos trabalhos originais, de forma a garantir a comparabilidade com os benchmarks teóricos.
 
 ## Métricas de avaliação
 
-As estimativas obtidas pelas três metodologias foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi necessária para garantir uma avaliação precisa da performance de cada metodologia em relação a uma referência amplamente reconhecida no mercado financeiro. Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
+As estimativas obtidas pelas três abordagens foram comparadas com os valores de referência fornecidos pela Bloomberg, considerados o padrão-ouro para a estimativa do spread bid-ask. Para realizar essa análise, os dados da Bloomberg foram importados e integrados à base processada, permitindo a construção de comparativos entre as estimativas calculadas e os valores reportados. Essa integração foi necessária para garantir uma avaliação precisa da performance de cada método em relação a uma referência amplamente reconhecida no mercado financeiro. Foram utilizadas métricas estatísticas para medir a proximidade das estimativas com os valores de referência, como o erro quadrático médio (MSE), que avalia a magnitude do erro entre as estimativas, e o coeficiente de correlação de Pearson, que mede a força e a direção da associação entre os valores estimados e os da Bloomberg. Esses indicadores forneceram uma base objetiva para identificar as condições em que os estimadores apresentaram melhor ou pior desempenho, destacando suas capacidades e limitações em diferentes contextos de negociação.
 
 ### Métricas de erro
 
-Para quantificar a precisão das estimativas geradas por cada metodologia em relação aos valores oficiais da Bloomberg, foram utilizadas as seguintes métricas de erro:
+Para quantificar a precisão das estimativas geradas por cada abordagem em relação aos valores oficiais da Bloomberg, foram utilizadas as seguintes métricas de erro:
 
 #### Erro Quadrático Médio (RMSE)
 
@@ -613,7 +613,7 @@ O RMSE é uma medida amplamente utilizada para avaliar a magnitude dos erros de 
 
 $RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$
 
-onde $y_i$ representa o valor oficial do spread (Bloomberg) e $\hat{y}_i$ representa o valor estimado pela metodologia em análise. O RMSE atribui maior peso a erros maiores devido à operação de elevação ao quadrado, tornando-o particularmente sensível a outliers. Esta métrica foi escolhida como principal indicador de proximidade entre as estimativas e os valores reais, sendo que valores menores de RMSE indicam maior precisão da metodologia.
+onde $y_i$ representa o valor oficial do spread (Bloomberg) e $\hat{y}_i$ representa o valor estimado pela metodologia em análise. O RMSE atribui maior peso a erros maiores devido à operação de elevação ao quadrado, tornando-o particularmente sensível a outliers. Esta métrica foi escolhida como principal indicador de proximidade entre as estimativas e os valores reais, sendo que valores menores de RMSE indicam maior precisão do método.
 
 #### Erro Absoluto Médio (MAE)
 
@@ -638,7 +638,7 @@ onde $F_1(x)$ e $F_2(x)$ são as funções de distribuição acumulada empírica
 
 # Resultados
 
-O estimador EDGE tem sua construção baseada na combinação otimizada de diferentes estimadores, minimizando a variância da estimativa final. Essa abordagem faz com que o método seja eficaz tanto em cenários de spreads estreitos quanto amplos, além de se adaptar automaticamente a variações na volatilidade do mercado. Dessa forma, a metodologia EDGE se mostra particularmente superior nos períodos de alta volatilidade, nos quais outras metodologias apresentam desempenho inconsistente.
+O estimador EDGE tem sua construção baseada na combinação otimizada de diferentes estimadores, minimizando a variância da estimativa final. Essa abordagem faz com que o método seja eficaz tanto em cenários de spreads estreitos quanto amplos, além de se adaptar automaticamente a variações na volatilidade do mercado. Dessa forma, a abordagem EDGE se mostra particularmente superior nos períodos de alta volatilidade, nos quais outras abordagens apresentam desempenho inconsistente.
 
 A seguir, são apresentadas as análises comparativas entre os diferentes estimadores, com o objetivo de avaliar suas performances no contexto do mercado acionário brasileiro e identificar qual metodologia oferece maior precisão na mensuração do spread bid-ask.
 
@@ -706,7 +706,7 @@ tabela_EDGE <- stats_table_EDGE %>%
   ) %>%
   gt::fmt_number(
     columns = c(Media_EDGE, DesvPad_EDGE, Mediana_EDGE, Maximo_EDGE, Minimo_EDGE),
-    decimals = 5
+    decimals = 6
   )
 
 # Criar a tabela para CS
@@ -728,7 +728,7 @@ tabela_CS <- stats_table_CS %>%
   ) %>%
   gt::fmt_number(
     columns = c(Media_CS, DesvPad_CS, Mediana_CS, Maximo_CS, Minimo_CS),
-    decimals = 5
+    decimals = 6
   )
 
 # Criar a tabela para AR
@@ -750,7 +750,7 @@ tabela_AR <- stats_table_AR %>%
   ) %>%
   gt::fmt_number(
     columns = c(Media_AR, DesvPad_AR, Mediana_AR, Maximo_AR, Minimo_AR),
-    decimals = 5
+    decimals = 6
   )
 
 ```
@@ -794,7 +794,7 @@ Tabela indicando as principais estatísticas do método AR
 
 Segundo Ardia, Guidotti e Kroencke (2024), enquanto todos os estimadores avaliados são não viesados em cenários com alta frequência de negociações (por exemplo, 390 negociações por dia), suas performances divergem significativamente à medida que essa frequência diminui. Especificamente, o estimador CS apresenta um viés negativo acentuado em frequências menores, chegando a estimar spreads nulos em situações com menos de dez negociações diárias. Isso ocorre devido à forte dependência do CS na suposição de que os ativos são negociados continuamente, o que não é válido em mercados com baixa liquidez.
 
-Por outro lado, o EDGE mantém estimativas não viesadas independentemente do número de negociações, graças a um termo de correção analítico que considera a negociação infrequente. Nossos resultados corroboram essa evidência, mostrando que o EDGE não retorna valores nulos mesmo em ativos com baixa frequência de negociação, ao contrário do CS. Dessa forma, o EDGE se apresenta como uma metodologia mais robusta e apropriada para estimar o spread bid-ask em mercados com ativos menos líquidos.
+Por outro lado, o EDGE mantém estimativas não viesadas independentemente do número de negociações, graças a um termo de correção analítico que considera a negociação infrequente. Nossos resultados corroboram essa evidência, mostrando que o EDGE não retorna valores nulos mesmo em ativos com baixa frequência de negociação, ao contrário do CS. Dessa forma, o EDGE se apresenta como uma técnica mais robusta e apropriada para estimar o spread bid-ask em mercados com ativos menos líquidos.
 
 Ao incluir o estimador de Abdi e Ranaldo (2017) (AR) na análise, conforme apresentado na tabela @tbl-estatsar, observa-se que o AR também fornece resultados significativos na estimativa do spread bid-ask no mercado brasileiro. O estimador AR exibiu valores mínimos de spread bid-ask de $0,0$ para ativos mais líquidos e $9,2 \times 10^{-5}$ para ativos menos líquidos. Embora apresente valores mínimos iguais a zero em alguns casos, o AR tende a estimar spreads maiores em comparação com o CS e o EDGE.
 
@@ -1294,7 +1294,7 @@ Fonte: Elaborado pelo autor
 Tabela indicando as principais estatísticas do método EDGE para pré-pandemia, ano da pandemia (2020) e pós-pandemia
 :::
 
-A @tbl-teste-t-edge20 corrobora estas observações, apresentando evidências estatísticas robustas da significância destas variações, com p-valores extremamente baixos em todas as comparações entre períodos. A estatística t para a comparação entre os períodos pré-pandemia e pandemia (-14,6615) é consideravelmente maior em valor absoluto do que a observada para o estimador CS (-9,3259), evidenciando a maior sensibilidade do EDGE às mudanças nas condições de mercado. Além disso, a diferença média entre o período da pandemia e o pré-pandemia (0,004660) é aproximadamente três vezes maior para o EDGE em comparação ao CS (0,001529), confirmando quantitativamente a capacidade superior do EDGE em detectar alterações nos custos de transação durante períodos de estresse de mercado. É notável também que, embora o teste t confirme que os valores do pós-pandemia permanecem significativamente diferentes dos níveis pré-pandemia (p = 0,0002), a estatística t é substancialmente menor (-3,7192), sugerindo que o mercado caminha para uma normalização, ainda que incompleta.
+A @tbl-teste-t-edge20 corrobora estas observações, apresentando evidências estatísticas robustas da significância destas variações, com p-valores extremamente baixos em todas as comparações entre períodos. A estatística t para a comparação entre os períodos pré-pandemia e pandemia (-14,6615) é consideravelmente maior em valor absoluto do que a observada para o estimador CS (-9,3259). É notável também que, embora o teste t confirme que os valores do pós-pandemia permanecem significativamente diferentes dos níveis pré-pandemia (p = 0,0002), a estatística t é substancialmente menor (-3,7192), sugerindo que o mercado caminha para uma normalização, ainda que incompleta.
 
 <!-- Tabela de teste-t para EDGE, comparando as médias entre os períodos-->
 
@@ -1388,7 +1388,7 @@ Fonte: Elaborado pelo autor
 Tabela indicando as principais estatísticas do método AR para pré-pandemia, ano da pandemia (2020) e pós-pandemia
 :::
 
-No período pós-pandemia, o spread médio reduziu para 0,011866 (queda de 26,2%), permanecendo 19,8% acima dos níveis pré-pandemia, o que sugere uma percepção mais conservadora deste método quanto à recuperação das condições de liquidez do mercado brasileiro. A @tbl-teste-t-ar20 valida estatisticamente estas variações, apresentando p-valores significativos em todas as comparações temporais realizadas. A estatística t para a comparação entre os períodos pré-pandemia e pandemia (-12,5987) demonstra uma sensibilidade similar à do EDGE (-14,6615), porém substancialmente superior à do CS (-9,3259).
+No período pós-pandemia, o spread médio reduziu para 0,011866 (queda de 26,2%), permanecendo 19,8% acima dos níveis pré-pandemia, o que sugere uma percepção mais conservadora deste método quanto à recuperação das condições de liquidez do mercado brasileiro. A @tbl-teste-t-ar20 valida estatisticamente estas variações, apresentando p-valores significativos em todas as comparações temporais realizadas. A estatística t para a comparação entre os períodos pré-pandemia e pandemia (-12,5987) demonstra uma sensibilidade similar à do EDGE (-14,6615), porém superior à do CS (-9,3259).
 
 <!-- Tabela de teste-t para AR, comparando as médias entre os períodos-->
 
@@ -1403,7 +1403,7 @@ Fonte: Elaborado pelo autor
 Tabela de teste estatístico T para comparação de médias entre os grupos de AR
 :::
 
-A análise comparativa dos três estimadores ao longo dos diferentes períodos revela padrões consistentes e significativos sobre seu comportamento e sensibilidade às condições de mercado. Em primeiro lugar, observamos uma hierarquia clara nos valores estimados: o método CS sempre fornece as estimativas mais baixas, o AR as mais altas, e o EDGE ocupa uma posição intermediária. Esta ordenação se manteve inalterada nos três períodos analisados, sugerindo características estruturais inerentes a cada metodologia.
+A análise comparativa dos três estimadores ao longo dos diferentes períodos revela padrões consistentes e significativos sobre seu comportamento e sensibilidade às condições de mercado. Em primeiro lugar, observamos uma hierarquia clara nos valores estimados: o método CS sempre fornece as estimativas mais baixas, o AR as mais altas, e o EDGE ocupa uma posição intermediária. Esta ordenação se manteve inalterada nos três períodos analisados, sugerindo características estruturais inerentes a cada método.
 
 Durante o período pré-pandemia, as diferenças entre os estimadores já eram evidentes, com o AR apresentando um spread médio 155,6% maior que o CS e o EDGE 93,8% maior. Estas diferenças substantivas indicam que, mesmo em condições normais de mercado, a escolha do estimador pode levar a conclusões significativamente distintas sobre os custos de transação no mercado brasileiro.
 
@@ -1735,7 +1735,7 @@ Este estudo teve como objetivo geral comparar, no mercado acionário brasileiro,
 
 A amostra utilizada foi composta por 138 ações listadas na B3, selecionadas com base em critérios de liquidez, onde foram consideradas apenas ações com índice de liquidez superior a 0,1, calculado em uma janela de seis meses. As ações foram distribuídas entre diferentes segmentos de governança corporativa: 96 pertencentes ao Novo Mercado, 16 ao Nível 2, 18 ao Nível 1 e 4 ao segmento Tradicional.
 
-Metodologicamente, o estudo aplicou os três estimadores selecionados aos dados de preços diários (abertura, máxima, mínima, fechamento) e volumes obtidos diretamente da B3, utilizando uma janela móvel de 21 dias para garantir consistência com estudos anteriores. As estimativas foram comparadas com valores de referência da Bloomberg através do teste de Kolmogorov-Smirnov e métricas de erro como RMSE e MAE.
+Metodologicamente, o estudo aplicou os três estimadores selecionados aos dados de preços diários (abertura, máxima, mínima, fechamento) e volumes obtidos diretamente da B3, utilizando uma janela móvel de 21 dias para garantir consistência com estudos anteriores. As estimativas foram comparadas com valores de referência da Bloomberg através do teste de Kolmogorov-Smirnov e das métricas de erro RMSE e MAE.
 
 Os resultados do teste de Kolmogorov-Smirnov indicaram que as distribuições dos spreads estimados por todos os três métodos são estatisticamente diferentes da distribuição dos valores da Bloomberg, o que sugere que nenhum dos estimadores reproduz perfeitamente a complexidade do spread bid-ask no mercado brasileiro. Esta constatação aponta para a existência de características específicas deste mercado emergente que podem não estar sendo adequadamente capturadas pelos modelos desenvolvidos originalmente para mercados mais líquidos e eficientes.
 
