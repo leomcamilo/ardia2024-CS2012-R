@@ -1,0 +1,11 @@
+O trabalho está ficando bem legal!!!!
+1) Citação de Tabela ou Figura no texto é sempre em maiúscula.
+2) observa-se que o estimador EDGE apresentou valores mínimos de spread bid-ask de 2.2 × 10−5 para ativos mais líquidos e 1,6 × 10−5 para ativos menos líquidos.
+    a) Não vejo o valor 2.2 × 10−5 na tabela
+    b) 2.2 está com ponto e 1,6 está com vírgula
+    c) você está dizendo que ativos menos líquidos tem spread mínimo menor que ativos mais líquidos. É isso mesmo? Se for, tem que explicar ou mostrar que a média ou mediaana é o inverso.
+3) que investigaram o desempenho de diferentes estimadores de spread bid-ask em função da frequência de negociações. => O que frequência tem a ver? eu tiraria o em função da frequência de negociações
+4) Vc poderia ter colocado estatísticas nas tabelas 1, 2,3 de menos líquidos e mais líquidos, pois todos os comentários se referenciam a isso.
+5) Nas tabelas 4, 5, 6 cabe um teste T para verificar se as médias são estatisticamente diferentes.
+    Vc está fazendo comentários, mas tudo pode ser igual!!!! e tem que falar que vc está considerando toda a amostra de ativos.
+6) O item 5.3.2 é a cereja do bolo. Tem que ter uma tabela. O ideal seria com 2 paineis. Painel A: ativos liquidos e menos liquidos. Painel B: pré, pandemia e pós. Se em todas elas o EDGE for melhor, temos um resultado interessante.
