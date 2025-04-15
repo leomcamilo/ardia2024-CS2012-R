@@ -12,3 +12,116 @@ O trabalho está ficando bem legal!!!!
 6) O item 5.3.2 é a cereja do bolo. Tem que ter uma tabela. O ideal seria com 2 paineis.
     Painel A: ativos liquidos e menos liquidos.
     Painel B: pré, pandemia e pós. Se em todas elas o EDGE for melhor, temos um resultado interessante.
+
+
+
+
+---------------------------------------------------
+V2
+1) MEXER NO RESUMO-
+    Resumo é sempre padrão! Objetivo, amostra, metodologia (pode citar o paper principal)
+    e os resultados em 2 ou 3 linha. Pode tirar a última frase.
+
+2) RETIRAR LISTA DE EQUAÇÕES
+
+3) Contexto:
+    Repare que vc afirma que bid-ask é fundamental e a análise é crucial.
+    Estas 2 afrmações tem que ser suportadas por algum autor..
+    Sempre começar a dissertação por  Fulano (2023) afirma que bid-ask é uma medida fundamental...
+"A análise do spread bid-ask é crucial para entender a eficiência do mercado e os custos enfrentados
+pelos investidores."
+
+4) Colocar como nota de rodapé o volume negociado na B3 versus Bolsas de outros emergentes
+"No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel
+central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela
+não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros
+instrumentos financeiros."
+
+5) Aqui o ideal seria a fonte dessa afirmação... é muito forte isso!
+"Apesar desses avanços, há
+uma lacuna notável na aplicação dessas técnicas a mercados emergentes. A maioria dos estudos
+concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas
+abordagens se comportam em contextos de menor liquidez e maior volatilidade, como o mercado
+brasileiro."
+
+6) e dizer que é order-driven
+    "A escolha do mercado brasileiro se justifica por suas características únicas como mercado
+emergente. A B3, com sua diversidade de ativos e participantes, oferece um ambiente ideal para
+testar a robustez das metodologias de estimativa do spread bid-ask. Além disso, Ripamonti (2016)
+sugere que os resultados obtidos podem ser generalizados para outros mercados emergentes com
+características semelhantes, ampliando o impacto e a relevância do estudo. Dessa forma, este tra-
+balho não só contribui para a literatura acadêmica, mas também oferece implicações práticas para
+investidores e reguladores no contexto de mercados emergentes."
+
+7) Tem que ter uma Seção 3.5 falando sobre critério da seleção da RNL, quantos artigos e
+    os principais resultados. Pode ser curta!!!!
+"A partir dessa revisão, foram
+selecionadas três técnicas de estimação de baixa frequência que vêm contribuindo de maneira sig-
+nificativa para aprimorar a medição do spread bid-ask e que apresentam potencial aplicabilidade ao
+mercado brasileiro"
+
+8) 96+16+18+4 = 134
+Vc diz que são 138....
+"Entre elas, 96 pertencem ao Novo Mercado, 16 ao Nível 2, 18 ao
+Nível 1 e 4 ao segmento Tradicional. Essa segmentação reflete distintos níveis de práticas de gover-
+nança corporativa, permitindo uma análise abrangente sobre como essas"
+
+9) Aqui, vc poderia entrar com o titulo de cada paper original no Scholar do Google e
+verificar quantas citações cada paper tem e colocar o total como nota de rodapé
+"Este estudo aplicou três métodos amplamente reconhecidos para a estimativa do spread bid-
+ask: CS, AR e EDGE utilizando dados obtidos diretamente da B3. Essas abordagens foram se-
+lecionadas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer
+insights em diferentes contextos de mercado."
+
+10) cada equação precisa estar numerada
+"Matematicamente, o estimador é definido pela seguinte expressão:"
+
+11) "e" não é a função exponencial?
+"onde 𝑆 representa o spread bid-ask estimado e 𝑒 é a base do logaritmo natural. O parâmetro
+𝛼 é calculado por"
+
+12) eu que paper?
+"O método foi aplicado a ações de 11 países, incluindo o Brasil, evidenciando sua eficácia
+em medir os custos de transação em diferentes contextos de liquidez e volatilidade. Essa técnica
+tem sido amplamente utilizada em estudos sobre microestrutura de mercado. Por exemplo, foi
+empregada para analisar a relação entre a qualidade das informações financeiras e a assimetria
+informacional, com resultados que destacaram sua eficiência em comparação a outros indicadores.
+Embora algumas pesquisas apontem limitações no uso do método como medida de liquidez para
+prever retornos, ele continua sendo uma ferramenta confiável para estimar custos de transação e
+compreender a dinâmica dos mercados financeiros."
+
+13) numerar as equações
+"onde 𝑆 é o spread bid-ask estimado, e 𝜎2
+𝐷 é a variância do termo 𝐷𝑡, ajustada com base
+nos preços de dois dias consecutivos. Essa formulação permite capturar de maneira mais precisa os
+custos de transação associados às negociações"
+
+14) separado errado
+"Adicionalmente, o modelo de Abdi e Ranaldo (2017) se destaca em cenários de baixa *liq-
+uidez*. Ao contrário do estimador de Corwin-Schultz (2012), que apresenta viés descendente em
+ativos menos líquidos, esse método AR foi dito como mais estável e robusto em condições de mer-
+cado desafiadoras"
+
+15) separado errado
+"o tornando uma ferramenta valiosa para analisar a eficiência e a liquidez em
+mercados emergentes e em desenvolvimento, onde a disponibilidade de dados intradiários é lim-
+itada. A relevância desse estimador é evidente ao compará-lo com outros modelos, como o de
+Corwin-Schultz."
+
+16) explicar taq
+Além disso, o método é amplamente aplicável, tendo sido validado em Abdi e Ranaldo
+(2017) em uma extensa amostra de ações nos EUA desde 1926, demonstrando alto grau de corre-
+lação com spreads efetivos medidos por dados intradiários (TAQ). Isso confirma sua eficácia como
+uma ferramenta para mensurar custos de transação e liquidez em longos períodos históricos, con-
+tribuindo para a análise de risco de liquidez sistemática e de commonality em liquidez
+
+17) numerar a equação
+𝑆 = 𝑓(𝑂𝑡, 𝐻𝑡, 𝐿𝑡, 𝐶𝑡)
+
+18) isso é percentual do preço ou já é o valor financeiro?
+"observa-se que o
+estimador EDGE apresentou valores mínimos de spread bid-ask de 2, 6 × 10−5 para ativos mais
+líquidos e 2, 4 × 10−5 para ativos menos líquidos. Em contraste, o estimador CS retornou valores
+iguais a zero para ambos os grupos de ativos."
+
+19) 0,008709 é diferente estatísticamente de 0,0008403? No Excel tem um Teste.T que faz isso.
