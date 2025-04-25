@@ -123,6 +123,17 @@ company_data_clean <- company_data_list %>%
   map(~ remove_na_rows(.x)) %>%
   set_names(company_codes$Company_Code[!map_lgl(company_data_list, is.null)])
 
+# Remover o sufixo ".SA" dos nomes dos elementos na lista company_data_clean
+# Verifica se a lista não está vazia antes de tentar renomear
+if (length(company_data_clean) > 0) {
+  current_names <- names(company_data_clean)
+  # Usa gsub para remover ".SA" do final de cada nome
+  # \\. escapa o ponto (caractere especial em regex)
+  # $ garante que a substituição ocorra apenas no final da string
+  new_names <- gsub("\\.SA$", "", current_names)
+  names(company_data_clean) <- new_names
+}
+
 # Verificar quais downloads falharam
 errors <- company_data_list %>%
   map("error") %>%
@@ -252,47 +263,61 @@ Seleção dos 30% maiores e 30% menores volumes diários; Ou seja, maiores e men
 -->
 ```
 
-```{r, include=FALSE}
+```{r calculo de liquidez, include=FALSE}
 # Agrupar as empresas com maiores médias de volume diários e selecionar os 30% maiores e 30% menores
 
-# Calcular a média de volume para cada empresa
-company_volumes <- company_data_clean %>%
-  # Extrair a coluna de Volume (coluna 5) de cada dataframe
-  map_dbl(~ mean(.x[[5]], na.rm = TRUE))
+# Define o caminho para o arquivo Excel
+file_path_liquidez <- file.path("auxilio", "liquidez-acoes.xlsx")
 
-# Converter os resultados para um dataframe para melhor manipulação
-company_volumes <- tibble(
-  Company = names(company_data_clean),
-  Mean_Volume = company_volumes
-)
+# Lê o arquivo Excel e salva como dataframe company_volumes
+company_volumes <- read_excel(file_path_liquidez)
+
+# Renomear colunas específicas por índice
+# Nota: Certifique-se de que os índices das colunas (7, 8, 9) estão corretos para o seu arquivo Excel.
+company_volumes <- company_volumes %>%
+  rename(
+    codigo = names(.)[7],
+    liquidez = names(.)[8],
+    segmento = names(.)[9]
+  )
 
 # Definir os percentis de 30% e 70%
-volume_30 <- quantile(company_volumes$Mean_Volume, 0.3, na.rm = TRUE)
-volume_70 <- quantile(company_volumes$Mean_Volume, 0.7, na.rm = TRUE)
+volume_30 <- quantile(company_volumes$liquidez, 0.3, na.rm = TRUE)
+volume_70 <- quantile(company_volumes$liquidez, 0.7, na.rm = TRUE)
 
 # Atribuir cada empresa a um grupo com base na média de volume
 company_volumes <- company_volumes %>%
   mutate(
     Group = case_when(
-      Mean_Volume <= volume_30 ~ "Low Volume (Bottom 30%)",
-      Mean_Volume > volume_70 ~ "High Volume (Top 30%)",
+      liquidez <= volume_30 ~ "Low Volume (Bottom 30%)",
+      liquidez > volume_70 ~ "High Volume (Top 30%)",
       TRUE ~ "Middle Volume (40%)"
     )
   )
 
-# Remover o sufixo ".SA" da coluna Company
-company_volumes <- company_volumes %>%
-  mutate(Company = str_replace(Company, "\\.SA$", ""))
+### - VOLTANDO PARA company_data_clean para filtrar as ações - ###
+
+# Filtrar company_data_clean para manter apenas os códigos presentes em company_volumes$codigo
+# Garante que company_volumes e a coluna 'codigo' existam
+if (exists("company_volumes") && "codigo" %in% names(company_volumes)) {
+  valid_codes <- company_volumes$codigo
+  # Filtra a lista mantendo apenas os elementos cujos nomes estão em valid_codes
+  company_data_clean <- company_data_clean[names(company_data_clean) %in% valid_codes]
+} else {
+  warning("O dataframe 'company_volumes' ou a coluna 'codigo' não foram encontrados. A filtragem não foi aplicada.")
+}
+
+### --- ###
 
 # Empresas de baixo volume (Bottom 30%)
 low_volume <- company_volumes %>%
   filter(Group == "Low Volume (Bottom 30%)") %>%
-  pull(Company)
+  pull(codigo)
 
 # Empresas de alto volume (Top 30%)
 high_volume <- company_volumes %>%
   filter(Group == "High Volume (Top 30%)") %>%
-  pull(Company)
+  pull(codigo)
 
 # Criando um company_data_clean_high_volume e company_data_clean_low_volume
 company_data_clean_high_volume <- company_data_clean[high_volume]
@@ -523,31 +548,37 @@ O estimador de spread bid-ask desenvolvido por Corwin e Schultz (2012) utiliza o
 
 Matematicamente, o estimador é definido pela seguinte expressão:
 
-$S = \frac{2 (e^\alpha - 1)}{1 + e^\alpha},$
+$$S = \frac{2 (e^\alpha - 1)}{1 + e^\alpha},$$ {#eq-estimador-cs} \equations{Estimador CS}
 
-onde $S$ representa o spread bid-ask estimado e $e$ é a base do logaritmo natural. O parâmetro $\alpha$ é calculado por:
+onde $S$ representa o spread bid-ask estimado e $e^\alpha$ denota a função exponencial de \alpha com base $e$ (número de Euler). O parâmetro $\alpha$ é calculado por:
 
-$\alpha = \frac{\sqrt{2\beta} - \sqrt{\beta}}{3 - 2\sqrt{2}} - \sqrt{\frac{\gamma}{3 - 2\sqrt{2}}},$
+$$\alpha = \frac{\sqrt{2\beta} - \sqrt{\beta}}{3 - 2\sqrt{2}} - \sqrt{\frac{\gamma}{3 - 2\sqrt{2}}},$$ {#eq-param-alpha-cs} \equations{Parâmetro $\alpha$ do estimador CS}
 
 sendo $\beta$ e $\gamma$ definidos a partir dos logaritmos naturais das razões entre os preços máximos, H, e mínimos, L, observados:
 
-$\beta = E\left[\sum_{j=0}^{1} \left( \ln \frac{H_{t+j}}{L_{t+j}} \right)^2 \right],$
+$$\beta = E\left[\sum_{j=0}^{1} \left( \ln \frac{H_{t+j}}{L_{t+j}} \right)^2 \right],$$ {#eq-param-beta-cs} \equations{Parâmetro $\beta$ do estimador CS}
 
-$\gamma = E\left[ \left( \ln \frac{H_{t,t+1}}{L_{t,t+1}} \right)^2 \right],$
+$$\gamma = E\left[ \left( \ln \frac{H_{t,t+1}}{L_{t,t+1}} \right)^2 \right],$$ {#eq-param-gamma-cs} \equations{Parâmetro $\gamma$ do estimador CS}
 
-onde $H_{t,t+1} = \max(H_t, H_{t+1})$ e $L_{t,t+1} = \min(L_t, L_{t+1})$. Nesse contexto, $\beta$ captura as variações diárias entre os preços máximos e mínimos, enquanto $\gamma$ reflete a dinâmica entre dois dias consecutivos. Essas variáveis permitem separar a volatilidade fundamental do ativo da componente relacionada ao spread bid-ask.
+onde $$H_{t,t+1} = \max(H_t, H_{t+1})$$ {#eq-param-high-cs} \equations{Parâmetro $High$ de $\beta$ e $\gamma$ do Estimador CS}
+
+e $$L_{t,t+1} = \min(L_t, L_{t+1})$$ {#eq-param-low-cs} \equations{Parâmetro $Low$ de $\beta$ e $\gamma$ do Estimador CS}
+
+Nesse contexto, a @eq-param-beta-cs captura as variações diárias entre os preços máximos e mínimos, enquanto a @eq-param-gamma-cs reflete a dinâmica entre dois dias consecutivos. Essas variáveis permitem separar a volatilidade fundamental do ativo da componente relacionada ao spread bid-ask.
 
 A partir dessas definições, torna-se evidente que o método permite isolar o impacto do spread bid-ask dos movimentos puramente voláteis do preço. A implementação do estimador é direta, dispensando iterações complexas, o que facilita sua aplicação prática em grandes conjuntos de dados. Corwin e Schultz (2012) validaram o estimador por meio de simulações que replicaram condições realistas de mercado, demonstrando que a correlação entre os valores estimados pelo método e os spreads reais é elevada, em torno de 0,9. Em comparação com o estimador de covariância de Roll (1984), o desvio padrão das estimativas de Corwin e Schultz é cerca de metade, indicando maior estabilidade nos resultados.
 
-O método foi aplicado a ações de 11 países, incluindo o Brasil, evidenciando sua eficácia em medir os custos de transação em diferentes contextos de liquidez e volatilidade. Essa técnica tem sido amplamente utilizada em estudos sobre microestrutura de mercado. Por exemplo, foi empregada para analisar a relação entre a qualidade das informações financeiras e a assimetria informacional, com resultados que destacaram sua eficiência em comparação a outros indicadores. Embora algumas pesquisas apontem limitações no uso do método como medida de liquidez para prever retornos, ele continua sendo uma ferramenta confiável para estimar custos de transação e compreender a dinâmica dos mercados financeiros.
+O método foi aplicado a ações de 11 países, incluindo o Brasil (Ripamonti, 2016; Ichimura, Videira, Ripamonti, 2020), evidenciando sua eficácia em medir os custos de transação em diferentes contextos de liquidez e volatilidade. Essa técnica tem sido amplamente utilizada em estudos sobre microestrutura de mercado. Por exemplo, foi empregada para analisar a relação entre a qualidade das informações financeiras e a assimetria informacional, com resultados que destacaram sua eficiência em comparação a outros indicadores. Embora algumas pesquisas apontem limitações no uso do método como medida de liquidez para prever retornos, ele continua sendo uma ferramenta confiável para estimar custos de transação e compreender a dinâmica dos mercados financeiros.
 
 Portanto, o estimador de Corwin e Schultz (2012) oferece uma solução prática e robusta para mensurar o spread bid-ask com base em dados diários, sendo amplamente adotado em estudos de microestrutura, especialmente em mercados onde dados intradiários são limitados. Sua simplicidade e eficácia tornam-no uma ferramenta valiosa para analisar a liquidez e a eficiência do mercado financeiro brasileiro.
 
-Já o estimador de Abdi e Ranaldo (2017) trouxe uma abordagem nova para o cálculo do spread, sendo desenvolvida para estimar o spread bid-ask utilizando preços diários de fechamento, máxima e mínima das ações. A abordagem se baseia na decomposição do spread em componentes de volatilidade e custos de transação, permitindo uma análise detalhada dos fatores que influenciam a formação de preços nos mercados financeiros. Esse estimador é fundamentado em três etapas principais. Primeiro, utiliza-se o preço médio entre a máxima e a mínima (mid-range) como um proxy para o preço eficiente, que é definido como $MR_t = \frac{H_t + L_t}{2}$, supondo que o spread bid-ask se cancela nesse cálculo. Em seguida, calcula-se a distância quadrática entre o preço de fechamento e o proxy de preço eficiente derivado da média das médias de dois dias consecutivos, com essa distância sendo representada como: $D_t = \left(C_t - MR_t\right)^2$. Por fim, essa distância é ajustada para remover a variância do preço eficiente, $\sigma^2_D,$ isolando assim o componente relacionado ao spread bid-ask. Essa abordagem, além de simplificar cálculos, não requer ajustes *ad hoc* para períodos sem negociação, como finais de semana e feriados, o que a torna menos suscetível a viéses comuns em outros modelos.
+Já o estimador de Abdi e Ranaldo (2017) trouxe uma abordagem nova para o cálculo do spread, sendo desenvolvida para estimar o spread bid-ask utilizando preços diários de fechamento, máxima e mínima das ações. A abordagem se baseia na decomposição do spread em componentes de volatilidade e custos de transação, permitindo uma análise detalhada dos fatores que influenciam a formação de preços nos mercados financeiros. Esse estimador é fundamentado em três etapas principais. Primeiro, utiliza-se o preço médio entre a máxima e a mínima (mid-range) como um proxy para o preço eficiente, que é definido como: $$MR_t = \frac{H_t + L_t}{2}$$ {#eq-mid-range-AR} \equations{Preço médio para cálculo do Estimador AR} Supondo que o spread bid-ask se cancela nesse cálculo.
+
+Em seguida, calcula-se a distância quadrática entre o preço de fechamento e o proxy de preço eficiente derivado da média das médias de dois dias consecutivos, com essa distância sendo representada como: $$D_t = \left(C_t - MR_t\right)^2$$ {#eq-dist-quad-AR} \equations{Distância quadrática entre o Preço de Fechamento e o Proxy de Preço Eficiente} Por fim, essa distância é ajustada para remover a variância do preço eficiente, $\sigma^2_D,$ isolando assim o componente relacionado ao spread bid-ask. Essa abordagem, além de simplificar cálculos, não requer ajustes *ad hoc* para períodos sem negociação, como finais de semana e feriados, o que a torna menos suscetível a viéses comuns em outros modelos.
 
 No final, a fórmula do estimador é dada por:
 
-$S = 2\sqrt{\sigma^2_D},$
+$$S = 2\sqrt{\sigma^2_D},$$ {#eq-estimador-AR} \equations{Estimador AR}
 
 onde $S$ é o spread bid-ask estimado, e $\sigma^2_D$ é a variância do termo $D_t$, ajustada com base nos preços de dois dias consecutivos. Essa formulação permite capturar de maneira mais precisa os custos de transação associados às negociações
 
@@ -561,19 +592,19 @@ O EDGE parte de três premissas centrais, compartilhadas com outros métodos: (1
 
 Matematicamente, o spread bid-ask estimado pelo EDGE é definido como:
 
-$S = f(O_t, H_t, L_t, C_t),$
+$$S = f(O_t, H_t, L_t, C_t),$$ {#eq-estimador-EDGE} \equations{Estimador EDGE}
 
 onde $S$ é o spread estimado, e a função $f$ combina as estatísticas derivadas dos preços OHLC. Em essência, o método utiliza a amplitude intradiária normalizada para capturar a dinâmica entre o preço eficiente e o spread bid-ask. A amplitude é calculada como:
 
-$A_t = \ln \frac{H_t}{L_t},$
+$$A_t = \ln \frac{H_t}{L_t},$$ {#eq-amplitude-intradiaria-EDGE} \equations{Amplitude intradiária}
 
 e o ajuste para a observação discreta de preços é dado por:
 
-$D_t = \ln \frac{C_t}{O_t},$
+$$D_t = \ln \frac{C_t}{O_t},$$ {#eq-ajuste-observacao-discreta} \equations{Ajuste para observação discreta}
 
 onde $A_t$ reflete a volatilidade e $D_t$ corrige o viés causado pela não observação contínua dos preços. O spread estimado é então ajustado por um termo de correção baseado na variação observada em múltiplos dias consecutivos, representado como:
 
-$S = \alpha \cdot A_t + \beta \cdot D_t,$
+$$S = \alpha \cdot A_t + \beta \cdot D_t,$$ \equations{Spread estimado para EDGE}
 
 em que os coeficientes $\alpha$ e $\beta$ são calibrados para garantir que o estimador seja imparcial e apresente a menor variância possível. Esses coeficientes são derivados empiricamente, considerando simulações e validações em diferentes mercados.
 
@@ -611,7 +642,7 @@ Para quantificar a precisão das estimativas geradas por cada abordagem em rela�
 
 O RMSE é uma medida amplamente utilizada para avaliar a magnitude dos erros de estimação, calculada pela raiz quadrada da média dos quadrados das diferenças entre valores estimados e valores reais:
 
-$RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$
+$$RMSE = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$$ {#eq-RMSE} \equations{Erro quadrático médio (EQM ou RMSE)}
 
 onde $y_i$ representa o valor oficial do spread (Bloomberg) e $\hat{y}_i$ representa o valor estimado pela metodologia em análise. O RMSE atribui maior peso a erros maiores devido à operação de elevação ao quadrado, tornando-o particularmente sensível a outliers. Esta métrica foi escolhida como principal indicador de proximidade entre as estimativas e os valores reais, sendo que valores menores de RMSE indicam maior precisão do método.
 
@@ -619,7 +650,7 @@ onde $y_i$ representa o valor oficial do spread (Bloomberg) e $\hat{y}_i$ repres
 
 Como métrica complementar, foi utilizado o MAE, calculado pela média dos valores absolutos das diferenças entre valores estimados e valores reais:
 
-$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$
+$$MAE = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$$ {#eq-erro-absoluto-medio} \equations{Erro Absoluto Médio (MAE)}
 
 O MAE atribui peso igual a todos os erros, independentemente de sua magnitude, oferecendo uma perspectiva alternativa sobre a precisão das estimativas.
 
@@ -627,7 +658,7 @@ O MAE atribui peso igual a todos os erros, independentemente de sua magnitude, o
 
 Para avaliar a similaridade estatística entre as distribuições das estimativas e dos valores oficiais, foi aplicado o teste de Kolmogorov-Smirnov (KS). Este teste não paramétrico avalia a hipótese nula de que duas amostras provêm da mesma distribuição. A estatística D do teste KS é calculada como:
 
-$D = \sup_x |F_1(x) - F_2(x)∣$
+$$D = \sup_x |F_1(x) - F_2(x)∣$$ {#eq-estatistica-d-ks} \equations{Estatística D de Kolmogorov-Smirnov}
 
 onde $F_1(x)$ e $F_2(x)$ são as funções de distribuição acumulada empíricas para as duas amostras sendo comparadas, e $\sup_x$ representa o supremo (máximo) das diferenças entre as duas distribuições. A interpretação dos resultados do teste KS é baseada no p-valor:
 

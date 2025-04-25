@@ -22,8 +22,6 @@ V2
     Resumo é sempre padrão! Objetivo, amostra, metodologia (pode citar o paper principal)
     e os resultados em 2 ou 3 linha. Pode tirar a última frase.
 
-2) RETIRAR LISTA DE EQUAÇÕES
-
 3) Contexto:
     Repare que vc afirma que bid-ask é fundamental e a análise é crucial.
     Estas 2 afrmações tem que ser suportadas por algum autor..
@@ -72,13 +70,6 @@ verificar quantas citações cada paper tem e colocar o total como nota de rodap
 ask: CS, AR e EDGE utilizando dados obtidos diretamente da B3. Essas abordagens foram se-
 lecionadas devido à sua robustez teórica, ampla aceitação na literatura e capacidade de oferecer
 insights em diferentes contextos de mercado."
-
-10) cada equação precisa estar numerada
-"Matematicamente, o estimador é definido pela seguinte expressão:"
-
-11) "e" não é a função exponencial?
-"onde 𝑆 representa o spread bid-ask estimado e 𝑒 é a base do logaritmo natural. O parâmetro
-𝛼 é calculado por"
 
 12) eu que paper?
 "O método foi aplicado a ações de 11 países, incluindo o Brasil, evidenciando sua eficácia
