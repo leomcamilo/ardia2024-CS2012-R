@@ -1,16 +1,16 @@
-\contentsline {equations}{\numberline {1}Estimador CS}{18}{section*.1}%
-\contentsline {equations}{\numberline {2}Parâmetro $\mitalpha $ do estimador CS}{18}{section*.2}%
-\contentsline {equations}{\numberline {3}Parâmetro $\mitbeta $ do estimador CS}{19}{section*.3}%
-\contentsline {equations}{\numberline {4}Parâmetro $\mitgamma $ do estimador CS}{19}{section*.4}%
-\contentsline {equations}{\numberline {5}Parâmetro $High$ de $\mitbeta $ e $\mitgamma $ do Estimador CS}{19}{section*.5}%
-\contentsline {equations}{\numberline {6}Parâmetro $Low$ de $\mitbeta $ e $\mitgamma $ do Estimador CS}{19}{section*.6}%
-\contentsline {equations}{\numberline {7}Preço médio para cálculo do Estimador AR}{20}{section*.7}%
-\contentsline {equations}{\numberline {8}Distância quadrática entre o Preço de Fechamento e o Proxy de Preço Eficiente}{20}{section*.8}%
-\contentsline {equations}{\numberline {9}Estimador AR}{21}{section*.9}%
-\contentsline {equations}{\numberline {10}Estimador EDGE}{22}{section*.10}%
-\contentsline {equations}{\numberline {11}Amplitude intradiária}{22}{section*.11}%
-\contentsline {equations}{\numberline {12}Ajuste para observação discreta}{22}{section*.12}%
-\contentsline {equations}{\numberline {13}Spread estimado para EDGE}{23}{section*.13}%
-\contentsline {equations}{\numberline {14}Erro quadrático médio (EQM ou RMSE)}{26}{section*.14}%
-\contentsline {equations}{\numberline {15}Erro Absoluto Médio (MAE)}{26}{section*.15}%
-\contentsline {equations}{\numberline {16}Estatística D de Kolmogorov-Smirnov}{27}{section*.16}%
+\contentsline {equations}{\numberline {1}Estimador CS}{20}{section*.1}%
+\contentsline {equations}{\numberline {2}Parâmetro $\mitalpha $ do estimador CS}{21}{section*.2}%
+\contentsline {equations}{\numberline {3}Parâmetro $\mitbeta $ do estimador CS}{21}{section*.3}%
+\contentsline {equations}{\numberline {4}Parâmetro $\mitgamma $ do estimador CS}{21}{section*.4}%
+\contentsline {equations}{\numberline {5}Parâmetro $High$ de $\mitbeta $ e $\mitgamma $ do Estimador CS}{21}{section*.5}%
+\contentsline {equations}{\numberline {6}Parâmetro $Low$ de $\mitbeta $ e $\mitgamma $ do Estimador CS}{21}{section*.6}%
+\contentsline {equations}{\numberline {7}Preço médio para cálculo do Estimador AR}{22}{section*.7}%
+\contentsline {equations}{\numberline {8}Distância quadrática entre o Preço de Fechamento e o Proxy de Preço Eficiente}{23}{section*.8}%
+\contentsline {equations}{\numberline {9}Estimador AR}{23}{section*.9}%
+\contentsline {equations}{\numberline {10}Estimador EDGE}{24}{section*.10}%
+\contentsline {equations}{\numberline {11}Amplitude intradiária}{25}{section*.11}%
+\contentsline {equations}{\numberline {12}Ajuste para observação discreta}{25}{section*.12}%
+\contentsline {equations}{\numberline {12}Spread estimado para EDGE}{25}{section*.12}%
+\contentsline {equations}{\numberline {13}Erro quadrático médio (EQM ou RMSE)}{28}{section*.13}%
+\contentsline {equations}{\numberline {14}Erro Absoluto Médio (MAE)}{29}{section*.14}%
+\contentsline {equations}{\numberline {15}Estatística D de Kolmogorov-Smirnov}{29}{section*.15}%
