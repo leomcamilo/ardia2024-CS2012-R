@@ -1,23 +1,3 @@
 1) MEXER NO RESUMO-
     Resumo é sempre padrão! Objetivo, amostra, metodologia (pode citar o paper principal)
     e os resultados em 2 ou 3 linha. Pode tirar a última frase.
-
-3) Contexto:
-    Repare que vc afirma que bid-ask é fundamental e a análise é crucial.
-    Estas 2 afrmações tem que ser suportadas por algum autor..
-    Sempre começar a dissertação por  Fulano (2023) afirma que bid-ask é uma medida fundamental...
-"A análise do spread bid-ask é crucial para entender a eficiência do mercado e os custos enfrentados
-pelos investidores."
-
-4) Colocar como nota de rodapé o volume negociado na B3 versus Bolsas de outros emergentes
-"No contexto dos mercados emergentes, a B3 (Brasil, Bolsa, Balcão) desempenha um papel
-central. A B3 é um importante centro de negociação de ativos financeiros na América Latina, ela
-não só facilita a negociação de ações, mas também de derivativos, títulos de renda fixa e outros
-instrumentos financeiros."
-
-5) Aqui o ideal seria a fonte dessa afirmação... é muito forte isso!
-"Apesar desses avanços, há
-uma lacuna notável na aplicação dessas técnicas a mercados emergentes. A maioria dos estudos
-concentra-se em mercados desenvolvidos, deixando uma lacuna na compreensão de como essas
-abordagens se comportam em contextos de menor liquidez e maior volatilidade, como o mercado
-brasileiro."
